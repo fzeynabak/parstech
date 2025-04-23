@@ -6,11 +6,14 @@ require_once 'includes/classes/Dashboard.php';
 require_once 'includes/classes/ChartGenerator.php';
 
 // بررسی لاگین بودن کاربر
-$auth = new Auth(new Database());
-$auth->requireLogin();
+$auth = new Auth();
+if (!$auth->isLoggedIn()) {
+    header('Location: login.php');
+    exit();
+}
 
 // دریافت اطلاعات داشبورد
-$dashboard = new Dashboard(new Database());
+$dashboard = new Dashboard();
 $stats = $dashboard->getStats();
 $recentTransactions = $dashboard->getRecentTransactions();
 $recentInvoices = $dashboard->getRecentInvoices();
@@ -302,104 +305,6 @@ require_once 'includes/header.php';
                 </div>
             </div>
         </div>
-
-        <!-- محصولات پرفروش و موجودی حساب‌ها -->
-        <div class="row g-4">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">محصولات پرفروش</h5>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>محصول</th>
-                                    <th>تعداد فروش</th>
-                                    <th>درآمد</th>
-                                    <th>موجودی</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($topProducts as $product): ?>
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <img src="<?php echo $product['image']; ?>" 
-                                                 alt="<?php echo $product['name']; ?>" 
-                                                 class="product-image me-2">
-                                            <?php echo $product['name']; ?>
-                                        </div>
-                                    </td>
-                                    <td><?php echo number_format($product['sales_count']); ?></td>
-                                    <td><?php echo number_format($product['revenue']); ?> تومان</td>
-                                    <td>
-                                        <?php if ($product['stock'] <= $product['stock_warning_level']): ?>
-                                            <span class="text-danger">
-                                                <?php echo $product['stock']; ?>
-                                                <i class="fas fa-exclamation-triangle ms-1" 
-                                                   data-bs-toggle="tooltip" 
-                                                   title="موجودی کم"></i>
-                                            </span>
-                                        <?php else: ?>
-                                            <?php echo $product['stock']; ?>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0">موجودی حساب‌ها</h5>
-                        <a href="accounts.php" class="btn btn-link">مدیریت حساب‌ها</a>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>حساب</th>
-                                    <th>شماره حساب</th>
-                                    <th>موجودی</th>
-                                    <th>وضعیت</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($accountBalances as $account): ?>
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <img src="<?php echo $account['bank_logo']; ?>" 
-                                                 alt="<?php echo $account['bank_name']; ?>" 
-                                                 class="bank-logo me-2">
-                                            <div>
-                                                <?php echo $account['bank_name']; ?>
-                                                <div class="small text-muted">
-                                                    <?php echo $account['account_type']; ?>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td><?php echo $account['account_number']; ?></td>
-                                    <td><?php echo number_format($account['balance']); ?> تومان</td>
-                                    <td>
-                                        <span class="badge bg-<?php echo $account['status_color']; ?>">
-                                            <?php echo $account['status']; ?>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
@@ -421,123 +326,5 @@ require_once 'includes/header.php';
         </div>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-$(document).ready(function() {
-    // تنظیم نمودار درآمد و هزینه
-    const incomeExpenseChart = new Chart(
-        document.getElementById('incomeExpenseChart').getContext('2d'),
-        {
-            type: 'line',
-            data: {
-                labels: <?php echo json_encode($cashFlow['labels']); ?>,
-                datasets: [
-                    {
-                        label: 'درآمد',
-                        data: <?php echo json_encode($cashFlow['income']); ?>,
-                        borderColor: '#28a745',
-                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    },
-                    {
-                        label: 'هزینه',
-                        data: <?php echo json_encode($cashFlow['expense']); ?>,
-                        borderColor: '#dc3545',
-                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top'
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return number_format(value) + ' تومان';
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    );
-
-    // تنظیم نمودار توزیع درآمد
-    const incomeDistributionChart = new Chart(
-        document.getElementById('incomeDistributionChart').getContext('2d'),
-        {
-            type: 'doughnut',
-            data: {
-                labels: <?php echo json_encode(array_column($stats['income_distribution'], 'label')); ?>,
-                datasets: [{
-                    data: <?php echo json_encode(array_column($stats['income_distribution'], 'value')); ?>,
-                    backgroundColor: [
-                        '#28a745',
-                        '#17a2b8',
-                        '#ffc107',
-                        '#dc3545',
-                        '#6c757d'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
-            }
-        }
-    );
-
-    // تغییر دوره زمانی نمودار
-    $('.dropdown-item[data-period]').click(function(e) {
-        e.preventDefault();
-        const period = $(this).data('period');
-        
-        // بروزرسانی نمودار با AJAX
-        $.get('api/chart-data.php', { period: period }, function(data) {
-            incomeExpenseChart.data.labels = data.labels;
-            incomeExpenseChart.data.datasets[0].data = data.income;
-            incomeExpenseChart.data.datasets[1].data = data.expense;
-            incomeExpenseChart.update();
-            
-            // بروزرسانی متن دکمه
-            $('#chartPeriodDropdown').text($(e.target).text());
-            
-            // تغییر کلاس active
-            $('.dropdown-item[data-period]').removeClass('active');
-            $(e.target).addClass('active');
-        });
-    });
-
-    // نمایش مودال خروج
-    $('#logoutBtn').click(function(e) {
-        e.preventDefault();
-        $('#logoutModal').modal('show');
-    });
-
-    // فعال‌سازی تولتیپ‌ها
-    $('[data-bs-toggle="tooltip"]').tooltip();
-
-    // تابع فرمت‌کردن اعداد
-    function number_format(number) {
-        return new Intl.NumberFormat('fa-IR').format(number);
-    }
-});
-</script>
 
 <?php require_once 'includes/footer.php'; ?>
