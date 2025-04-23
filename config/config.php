@@ -1,6 +1,6 @@
 <?php
 // تنظیمات پایه
-define('BASE_URL', 'https://parstech.com');
+define('BASE_URL', 'http://localhost/parstech');
 define('SITE_NAME', 'پارس تک');
 define('ADMIN_EMAIL', 'admin@parstech.com');
 
@@ -52,6 +52,30 @@ define('DEFAULT_LANGUAGE', 'fa');
 define('DEFAULT_TIMEZONE', 'Asia/Tehran');
 define('DATE_FORMAT', 'Y-m-d H:i:s');
 define('RECORDS_PER_PAGE', 20);
+
+// تنظیم timezone
+date_default_timezone_set(DEFAULT_TIMEZONE);
+
+// تنظیم error reporting
+if ($_SERVER['SERVER_NAME'] === 'localhost' || strpos($_SERVER['SERVER_NAME'], 'dev.') === 0) {
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+} else {
+    error_reporting(0);
+    ini_set('display_errors', 0);
+}
+
+// تنظیمات session (قبل از session_start)
+ini_set('session.cookie_httponly', 1);
+ini_set('session.use_only_cookies', 1);
+ini_set('session.cookie_secure', isset($_SERVER['HTTPS']));
+session_set_cookie_params(
+    SESSION_LIFETIME,
+    '/',
+    $_SERVER['HTTP_HOST'],
+    isset($_SERVER['HTTPS']),
+    true
+);
 
 // کلاس تنظیمات
 class Config {
@@ -122,31 +146,6 @@ class Config {
         return $cdnUrls[$key] ?? null;
     }
 }
-
-// تنظیم timezone
-date_default_timezone_set(DEFAULT_TIMEZONE);
-
-// تنظیم error reporting
-if ($_SERVER['SERVER_NAME'] === 'localhost' || strpos($_SERVER['SERVER_NAME'], 'dev.') === 0) {
-    error_reporting(E_ALL);
-    ini_set('display_errors', 1);
-} else {
-    error_reporting(0);
-    ini_set('display_errors', 0);
-}
-
-// تنظیم session
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_only_cookies', 1);
-ini_set('session.cookie_secure', 1);
-session_set_cookie_params([
-    'lifetime' => SESSION_LIFETIME,
-    'path' => '/',
-    'domain' => $_SERVER['HTTP_HOST'],
-    'secure' => true,
-    'httponly' => true,
-    'samesite' => 'Strict'
-]);
 
 // تابع helper برای لود کردن assets
 function asset($type, $key) {
