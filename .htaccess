@@ -75,3 +75,7 @@ RewriteRule ^page/([^/]+)/?$ index.php?page=$1 [L,QSA]
 
 # API endpoints
 RewriteRule ^api/([^/]+)/?$ api/index.php?action=$1 [L,QSA]
+
+# Redirect dashboard.php to index.php
+RewriteEngine On
+RewriteRule ^dashboard\.php$ index.php [L,R=301]
