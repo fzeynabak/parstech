@@ -3,43 +3,49 @@ document.addEventListener("DOMContentLoaded", function () {
     function initPersianDatePickers() {
         if (typeof $ !== 'undefined' && $.fn.persianDatepicker) {
             // تاریخ صدور
-            if ($('#issued_at_jalali').length) {
-                $('#issued_at_jalali').persianDatepicker({
-                    format: 'YYYY/MM/DD',
-                    autoClose: true,
-                    initialValue: true,
-                    onSelect: function (unix) {
-                        let pd = new persianDate(unix).toLocale('en').format('YYYY-MM-DD');
-                        $('#issued_at').val(pd);
-                    }
-                });
-            }
+            $('#issued_at_jalali').persianDatepicker({
+                format: 'YYYY/MM/DD',
+                autoClose: true,
+                initialValue: true,
+                onSelect: function (unix) {
+                    let pd = new persianDate(unix).toLocale('en').format('YYYY-MM-DD');
+                    $('#issued_at').val(pd);
+                }
+            });
+
             // تاریخ سررسید
-            if ($('#due_at_jalali').length) {
-                $('#due_at_jalali').persianDatepicker({
-                    format: 'YYYY/MM/DD',
-                    autoClose: true,
-                    initialValue: true,
-                    onSelect: function (unix) {
-                        let pd = new persianDate(unix).toLocale('en').format('YYYY-MM-DD');
-                        $('#due_at').val(pd);
-                    }
-                });
-            }
+            $('#due_at_jalali').persianDatepicker({
+                format: 'YYYY/MM/DD',
+                autoClose: true,
+                initialValue: true,
+                onSelect: function (unix) {
+                    let pd = new persianDate(unix).toLocale('en').format('YYYY-MM-DD');
+                    $('#due_at').val(pd);
+                }
+            });
+        } else {
+            console.error("persianDatepicker is not loaded or undefined.");
         }
     }
 
     // اجرای تقویم شمسی
     initPersianDatePickers();
 
-        // دکمه باز کردن تقویم
-        document.getElementById('openIssuedDatePicker').addEventListener('click', function () {
+    // دکمه باز کردن تقویم
+    const openIssuedDatePicker = document.getElementById('openIssuedDatePicker');
+    const openDueDatePicker = document.getElementById('openDueDatePicker');
+    if (openIssuedDatePicker && openDueDatePicker) {
+        openIssuedDatePicker.addEventListener('click', function () {
             $('#issued_at_jalali').focus();
         });
-        document.getElementById('openDueDatePicker').addEventListener('click', function () {
+
+        openDueDatePicker.addEventListener('click', function () {
             $('#due_at_jalali').focus();
         });
-    
+    } else {
+        console.error("Datepicker buttons not found in DOM.");
+    }
+
     // --- سایر بخش‌ها ---
     // شماره فاکتور اتوماتیک
     const invoiceNumberInput = document.getElementById('invoice_number');
