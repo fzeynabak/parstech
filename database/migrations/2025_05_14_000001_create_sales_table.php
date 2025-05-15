@@ -10,7 +10,7 @@ class CreateSalesTable extends Migration
     {
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
-            $table->string('invoice_number', 50)->unique(); // <-- این خط را اضافه کن
+            $table->string('invoice_number', 50)->unique();
             $table->string('reference')->nullable();
             $table->unsignedBigInteger('customer_id');
             $table->unsignedBigInteger('seller_id');
@@ -19,6 +19,11 @@ class CreateSalesTable extends Migration
             $table->dateTime('issued_at');
             $table->decimal('total_price', 20, 2)->default(0);
             $table->timestamps();
+
+            // اگر روابط کلیدی لازم است (اختیاری)
+            // $table->foreign('customer_id')->references('id')->on('customers');
+            // $table->foreign('seller_id')->references('id')->on('sellers');
+            // $table->foreign('currency_id')->references('id')->on('currencies');
         });
     }
 
