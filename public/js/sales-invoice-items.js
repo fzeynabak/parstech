@@ -155,35 +155,32 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // آرایه اقلام فاکتور برای مدیریت تکراری‌ها
+    // آرایه آیتم‌های فاکتور
     let invoiceItems = [];
 
-    // افزودن محصول/خدمت به سبد خرید
+    // افزودن محصول/خدمت به فاکتور (با کنترل تکراری)
     document.body.addEventListener('click', function (e) {
         if (e.target.closest('.add-product-btn')) {
             e.preventDefault();
             let btn = e.target.closest('.add-product-btn');
             let id = String(btn.dataset.id);
             let type = String(btn.dataset.type);
+
             // دریافت اطلاعات محصول با ایجکس
             fetch(`/sales/item-info?id=${id}&type=${type}`)
                 .then(response => response.json())
                 .then(item => {
-                    // چک تکراری بودن
+                    // بررسی تکراری بودن
                     let idx = invoiceItems.findIndex(x => x.id == id && x.type == type);
                     if (idx > -1) {
-                        // اگر وجود داشت، تعداد رو زیاد کن
-                        let row = document.querySelectorAll('#invoice-items-body tr')[idx];
-                        let countInput = row.querySelector('input[name="counts[]"]');
-                        countInput.value = parseInt(countInput.value) + 1;
-                        invoiceItems[idx].count = parseInt(countInput.value);
-                        updateCartTotals();
-                        // SweetAlert نمایش بده
+                        // اگر وجود داشت فقط تعداد را زیاد کن
+                        invoiceItems[idx].count += 1;
+                        renderInvoiceItemsTable();
                         if (typeof Swal !== "undefined") {
                             Swal.fire({
                                 icon: 'info',
                                 title: 'محصول تکراری',
-                                text: 'تعداد این محصول افزایش یافت.',
+                                text: 'تعداد این محصول در فاکتور افزایش یافت.',
                                 timer: 1200,
                                 showConfirmButton: false,
                                 toast: true,
@@ -191,12 +188,12 @@ document.addEventListener("DOMContentLoaded", function () {
                             });
                         }
                     } else {
-                        // اگر نبود، اضافه کن به آرایه و جدول
+                        // اگر نبود، اضافه کن به آرایه
                         item.id = id;
                         item.type = type;
                         item.count = 1;
                         invoiceItems.push(item);
-                        addToCart(item);
+                        renderInvoiceItemsTable();
                     }
                 })
                 .catch(error => console.error('Error:', error));
@@ -207,61 +204,57 @@ document.addEventListener("DOMContentLoaded", function () {
             if(row) {
                 let idx = Array.from(row.parentNode.children).indexOf(row);
                 invoiceItems.splice(idx, 1);
-                row.remove();
-                updateCartTotals();
+                renderInvoiceItemsTable();
             }
         }
     });
 
-    // افزودن ردیف به جدول فاکتور
-    function addToCart(item){
+    // ساخت جدول فاکتور بر اساس آرایه invoiceItems
+    function renderInvoiceItemsTable() {
         let tbody = document.getElementById('invoice-items-body');
-        let row = document.createElement('tr');
-        row.innerHTML = `
-            <td><button type="button" class="btn btn-danger btn-sm remove-invoice-item"><i class="fa fa-trash"></i></button></td>
-            <td>${item.name}</td>
-            <td><input type="text" class="form-control input-sm" name="descs[]" value=""></td>
-            <td>${item.unit ?? ''}</td>
-            <td><input type="number" class="form-control input-sm" name="counts[]" value="1" min="1"></td>
-            <td><input type="text" class="form-control input-sm" name="unit_prices[]" value="${item.sell_price ?? 0}"></td>
-            <td><input type="text" class="form-control input-sm" name="discounts[]" value="0"></td>
-            <td><input type="text" class="form-control input-sm" name="taxes[]" value="0"></td>
-            <td class="item-total">${item.sell_price ?? 0}</td>
-        `;
-        tbody.appendChild(row);
-        updateCartTotals();
-    }
-
-    // محاسبه جمع کل سبد خرید
-    function updateCartTotals(){
-        let tbody = document.getElementById('invoice-items-body');
-        let total = 0;
-        let count = 0;
-        tbody.querySelectorAll('tr').forEach((row, idx) => {
-            let qtyInput = row.querySelector('input[name="counts[]"]');
-            let priceInput = row.querySelector('input[name="unit_prices[]"]');
-            let discountInput = row.querySelector('input[name="discounts[]"]');
-            let taxInput = row.querySelector('input[name="taxes[]"]');
-            let qty = +qtyInput.value || 0;
-            let price = +priceInput.value || 0;
-            let discount = +discountInput.value || 0;
-            let tax = +taxInput.value || 0;
-            let itemTotal = ((qty * price) - discount) + tax;
-            row.querySelector('.item-total').textContent = itemTotal.toLocaleString() + ' ریال';
+        tbody.innerHTML = '';
+        let total = 0, count = 0;
+        invoiceItems.forEach((item, idx) => {
+            let itemTotal = ((item.count * (parseInt(item.sell_price) || 0)) - (parseInt(item.discount) || 0)) + (parseInt(item.tax) || 0);
             total += itemTotal;
-            count += qty;
-            // همزمان مقدار تعداد آرایه رو هم آپدیت کن
-            if (invoiceItems[idx]) invoiceItems[idx].count = qty;
+            count += item.count;
+            let row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm remove-invoice-item">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </td>
+                <td>${item.name ?? ''}</td>
+                <td><input type="text" class="form-control input-sm" name="descs[]" value="${item.desc ?? ''}"></td>
+                <td>${item.unit ?? ''}</td>
+                <td>
+                    <input type="number" class="form-control input-sm item-count-input" name="counts[]" value="${item.count}" min="1" data-idx="${idx}">
+                </td>
+                <td><input type="text" class="form-control input-sm" name="unit_prices[]" value="${item.sell_price ?? 0}"></td>
+                <td><input type="text" class="form-control input-sm" name="discounts[]" value="${item.discount ?? 0}"></td>
+                <td><input type="text" class="form-control input-sm" name="taxes[]" value="${item.tax ?? 0}"></td>
+                <td class="item-total">${itemTotal.toLocaleString()} ریال</td>
+            `;
+            tbody.appendChild(row);
         });
         document.getElementById('total_count').textContent = count;
         document.getElementById('total_amount').textContent = total.toLocaleString() + ' ریال';
         document.getElementById('invoice-total-amount').textContent = total.toLocaleString() + ' ریال';
     }
 
-    // تغییرات دستی مقدار‌ها در سبد خرید
+    // تغییر تعداد هر ردیف از جدول، مقدار آرایه را هم آپدیت کن
     document.body.addEventListener('input', function(e){
+        if (e.target.classList.contains('item-count-input')) {
+            let idx = parseInt(e.target.dataset.idx);
+            let val = parseInt(e.target.value);
+            if (isNaN(val) || val < 1) val = 1;
+            invoiceItems[idx].count = val;
+            renderInvoiceItemsTable();
+        }
+        // تغییر دستی بقیه فیلدها هم جمع‌کل را آپدیت کند
         if (e.target.closest('#invoice-items-body input')) {
-            updateCartTotals();
+            renderInvoiceItemsTable();
         }
     });
 });
