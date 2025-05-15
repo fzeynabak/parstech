@@ -133,4 +133,5 @@
 <script src="{{ asset('js/persian-date.js') }}"></script>
 <script src="{{ asset('js/persian-datepicker.min.js') }}"></script>
 <script src="{{ asset('js/sales-invoice.js') }}"></script>
+<script src="{{ asset('js/sales-invoice-items.js') }}"></script>
 @endsection

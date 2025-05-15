@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/sales.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @yield('styles')
 </head>
 <body class="sales-layout-bg">
@@ -35,6 +36,7 @@
 
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('js/sales.js') }}"></script>
+    <script src="{{ asset('js/sales-invoice-items.js') }}"></script>
     @yield('scripts')
 </body>
 </html>

@@ -30,7 +30,7 @@ function renderInvoiceItemsTable() {
                 <td>
                     <input type="number" min="1" class="form-control form-control-sm text-center invoice-item-count" data-idx="${idx}" value="${item.count}">
                 </td>
-                <td>${item.sale_price}</td>
+                <td>${item.sale_price.toLocaleString('fa-IR')}</td>
                 <td>${rowTotal.toLocaleString('fa-IR')}</td>
                 <td>
                     <button type="button" class="btn btn-danger btn-sm remove-invoice-item-btn" data-idx="${idx}">
@@ -60,12 +60,25 @@ document.addEventListener('DOMContentLoaded', function () {
                     image: tr.querySelector('img')?.src,
                     name: tds[3].innerText,
                     count: 1,
-                    sale_price: tds[6].innerText.replace(/,/g, '').trim()
+                    sale_price: parseInt(tds[6].innerText.replace(/,/g, '').replace(/[^\d]/g, '')) || 0
                 };
-                // اگر قبلاً اضافه شده باشد فقط تعداد را زیاد کن
+                // اگر قبلاً اضافه شده فقط تعداد را زیاد کن و SweetAlert نمایش بده
                 const idx = invoiceItems.findIndex(x => x.id == item.id && x.type == item.type);
                 if (idx > -1) {
                     invoiceItems[idx].count += 1;
+                    if (typeof Swal !== "undefined") {
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'محصول تکراری',
+                            text: 'تعداد این محصول در فاکتور افزایش یافت.',
+                            timer: 1300,
+                            showConfirmButton: false,
+                            toast: true,
+                            position: 'top-end'
+                        });
+                    } else {
+                        alert('تعداد این محصول در فاکتور افزایش یافت.');
+                    }
                 } else {
                     invoiceItems.push(item);
                 }
@@ -77,8 +90,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // تغییر تعداد هر آیتم
     document.getElementById('invoice-items-tbody').addEventListener('input', function(e) {
         if (e.target.classList.contains('invoice-item-count')) {
-            const idx = parseInt(e.target.dataset.idx);
-            const val = Math.max(1, parseInt(e.target.value) || 1);
+            const idx = +e.target.dataset.idx;
+            let val = parseInt(e.target.value);
+            if (isNaN(val) || val < 1) val = 1;
             invoiceItems[idx].count = val;
             renderInvoiceItemsTable();
         }
@@ -87,24 +101,17 @@ document.addEventListener('DOMContentLoaded', function () {
     // حذف آیتم
     document.getElementById('invoice-items-tbody').addEventListener('click', function(e) {
         if (e.target.closest('.remove-invoice-item-btn')) {
-            const idx = parseInt(e.target.closest('.remove-invoice-item-btn').dataset.idx);
+            const idx = +e.target.closest('.remove-invoice-item-btn').dataset.idx;
             invoiceItems.splice(idx, 1);
             renderInvoiceItemsTable();
         }
     });
-
-    // هنگام لود اولیه
-    renderInvoiceItemsTable();
 });
+
+// همگام‌سازی با فرم (در صورت نیاز)
 function syncInvoiceItemsToForm() {
-    // آرایه را به صورت JSON در یک input مخفی قرار بده
-    let hiddenInput = document.getElementById('invoice_items_input');
-    if (!hiddenInput) {
-        hiddenInput = document.createElement('input');
-        hiddenInput.type = 'hidden';
-        hiddenInput.name = 'invoice_items';
-        hiddenInput.id = 'invoice_items_input';
-        document.getElementById('sales-invoice-form').appendChild(hiddenInput);
+    const input = document.getElementById('invoice-items-json');
+    if (input) {
+        input.value = JSON.stringify(invoiceItems);
     }
-    hiddenInput.value = JSON.stringify(invoiceItems);
 }

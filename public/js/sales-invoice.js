@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         // افزودن به جدول فاکتور
                         addToCart(item);
                     })
-                    .catch(error => console.error('Error:', error));
+
         }
         if (e.target.closest('.remove-invoice-item')) {
             e.preventDefault();
@@ -225,4 +225,5 @@ document.addEventListener("DOMContentLoaded", function () {
             updateCartTotals();
         }
     });
+
 });

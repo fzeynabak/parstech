@@ -53,7 +53,7 @@ class ProductController extends Controller
         $type = $request->input('type');
 
         if ($type === 'product') {
-            $product = Product::with('category')->findOrFail($id);
+            $product = \App\Models\Product::with('category')->findOrFail($id);
             return response()->json([
                 'id' => $product->id,
                 'code' => $product->code,
@@ -65,8 +65,7 @@ class ProductController extends Controller
                 'unit' => $product->unit ?? '-',
             ]);
         } elseif ($type === 'service') {
-            // اگر نوع خدمت باشد
-            $service = Service::with('category')->findOrFail($id);
+            $service = \App\Models\Service::with('category')->findOrFail($id);
             return response()->json([
                 'id' => $service->id,
                 'code' => $service->code,
