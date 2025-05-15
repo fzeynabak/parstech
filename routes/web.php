@@ -34,7 +34,7 @@ use App\Http\Controllers\Api\ProductApiController;
 use App\Http\Controllers\Api\ServiceApiController;
 
 Route::get('/sales/next-invoice-number', [SaleController::class, 'nextInvoiceNumber']);
-
+Route::get('/sales', [SaleController::class, 'index'])->name('sales.index');
 
 Route::get('/sales/item-info', [ProductController::class, 'itemInfo']); // هندل کردن هم محصول و هم خدمت
 Route::get('/products/ajax-list', [ProductController::class, 'ajaxList']);

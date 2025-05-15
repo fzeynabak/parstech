@@ -17,7 +17,6 @@ class Sale extends Model
         'currency_id',
         'title',
         'issued_at',
-        'due_at',
         'total_price',
     ];
 

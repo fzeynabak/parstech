@@ -1,29 +1,40 @@
 @extends('layouts.app')
 
-@section('title', 'لیست فروش‌ها')
+@section('title', 'لیست فاکتورهای فروش')
 
 @section('content')
 <div class="container">
-    <h1>لیست فروش‌ها</h1>
+    <h1>لیست فاکتورهای فروش</h1>
     <a href="{{ route('sales.create') }}" class="btn btn-primary mb-3">ثبت فروش جدید</a>
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
     <table class="table table-bordered">
         <thead>
             <tr>
-                <th>نام فروشنده</th>
-                <th>محصول</th>
-                <th>تعداد</th>
-                <th>قیمت کل</th>
-                <th>تاریخ فروش</th>
+                <th>شماره فاکتور</th>
+                <th>مشتری</th>
+                <th>فروشنده</th>
+                <th>تاریخ صدور</th>
+                <th>مبلغ کل</th>
+                <th>اقلام</th>
             </tr>
         </thead>
         <tbody>
             @foreach($sales as $sale)
             <tr>
-                <td>{{ $sale->seller->first_name }} {{ $sale->seller->last_name }}</td>
-                <td>{{ $sale->product->name }}</td>
-                <td>{{ $sale->quantity }}</td>
-                <td>{{ $sale->total_price }} تومان</td>
-                <td>{{ $sale->sale_date }}</td>
+                <td>{{ $sale->invoice_number }}</td>
+                <td>{{ $sale->customer ? $sale->customer->first_name . ' ' . $sale->customer->last_name : '-' }}</td>
+                <td>{{ $sale->seller ? $sale->seller->first_name . ' ' . $sale->seller->last_name : '-' }}</td>
+                <td>{{ \Morilog\Jalali\Jalalian::fromDateTime($sale->issued_at)->format('Y/m/d') }}</td>
+                <td>{{ number_format($sale->total_price) }} ریال</td>
+                <td>
+                    <ul>
+                        @foreach($sale->items as $item)
+                            <li>{{ $item->product ? $item->product->name : '-' }} × {{ $item->quantity }} ({{ number_format($item->total) }} ریال)</li>
+                        @endforeach
+                    </ul>
+                </td>
             </tr>
             @endforeach
         </tbody>

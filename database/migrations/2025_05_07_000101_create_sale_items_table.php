@@ -9,7 +9,7 @@ class CreateSaleItemsTable extends Migration
     public function up()
     {
         Schema::create('sale_items', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements('id');
             $table->unsignedBigInteger('sale_id');
             $table->unsignedBigInteger('product_id');
             $table->string('description')->nullable();
@@ -17,12 +17,12 @@ class CreateSaleItemsTable extends Migration
             $table->integer('quantity');
             $table->bigInteger('unit_price');
             $table->bigInteger('discount')->default(0);
-            $table->decimal('tax', 5, 2)->default(0);
+            $table->decimal('tax', 5, 2)->default(0.00);
             $table->bigInteger('total');
             $table->timestamps();
 
             $table->foreign('sale_id')->references('id')->on('sales')->onDelete('cascade');
-            $table->foreign('product_id')->references('id')->on('products');
+            $table->foreign('product_id')->references('id')->on('products')->onDelete('restrict');
         });
     }
 
