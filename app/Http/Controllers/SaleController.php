@@ -19,23 +19,12 @@ class SaleController extends Controller
         $sellers = Seller::all();
         $products = Product::all();
         $currencies = Currency::all();
-        // شماره بعدی فاکتور
         $last = Sale::orderByDesc('id')->first();
         $nextNumber = 'invoices-10001';
         if ($last && preg_match('/invoices-(\d+)/', $last->invoice_number, $m)) {
             $nextNumber = 'invoices-' . (intval($m[1]) + 1);
         }
         return view('sales.create', compact('sellers', 'products', 'currencies', 'nextNumber'));
-    }
-
-    public function nextInvoiceNumber()
-    {
-        $last = Sale::orderByDesc('id')->first();
-        $number = 'invoices-10001';
-        if ($last && preg_match('/invoices-(\d+)/', $last->invoice_number, $m)) {
-            $number = 'invoices-' . (intval($m[1]) + 1);
-        }
-        return response()->json(['number' => $number]);
     }
 
     public function store(Request $request)
@@ -48,10 +37,23 @@ class SaleController extends Controller
             'issued_at_jalali' => 'required',
             'due_at_jalali' => 'required',
             'products_input' => 'required',
+        ], [
+            'customer_id.required' => 'مشتری را انتخاب کنید.',
+            'seller_id.required' => 'فروشنده را انتخاب کنید.',
+            'currency_id.required' => 'واحد پول را انتخاب کنید.',
+            'products_input.required' => 'حداقل یک محصول یا خدمت به فاکتور اضافه کنید.',
         ]);
 
-        $issued_at = Jalalian::fromFormat('Y/m/d', $request->issued_at_jalali)->toCarbon();
-        $due_at = Jalalian::fromFormat('Y/m/d', $request->due_at_jalali)->toCarbon();
+        // کنترل مقدار تاریخ و تبدیل با هندل خطا
+        if (empty($request->issued_at_jalali) || empty($request->due_at_jalali)) {
+            return back()->withInput()->withErrors(['dates' => 'تاریخ فاکتور یا تاریخ سررسید وارد نشده است.']);
+        }
+        try {
+            $issued_at = Jalalian::fromFormat('Y/m/d', $request->issued_at_jalali)->toCarbon();
+            $due_at = Jalalian::fromFormat('Y/m/d', $request->due_at_jalali)->toCarbon();
+        } catch (\Exception $ex) {
+            return back()->withInput()->withErrors(['dates' => 'فرمت تاریخ وارد شده صحیح نیست. لطفاً مجدداً انتخاب کنید.']);
+        }
 
         DB::beginTransaction();
         try {
@@ -105,5 +107,15 @@ class SaleController extends Controller
             DB::rollBack();
             return redirect()->back()->withInput()->withErrors(['error' => 'خطا در ثبت فاکتور: '.$e->getMessage()]);
         }
+    }
+
+    public function nextInvoiceNumber()
+    {
+        $last = Sale::orderByDesc('id')->first();
+        $number = 'invoices-10001';
+        if ($last && preg_match('/invoices-(\d+)/', $last->invoice_number, $m)) {
+            $number = 'invoices-' . (intval($m[1]) + 1);
+        }
+        return response()->json(['number' => $number]);
     }
 }

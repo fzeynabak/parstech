@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('styles')
+    <link rel="stylesheet" href="{{ asset('css/persian-datepicker.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/persianDatepicker-melon.css') }}">
     <link rel="stylesheet" href="{{ asset('css/sales-invoice.css') }}">
     <style>
@@ -69,19 +70,17 @@
                 <label>ارجاع</label>
                 <input type="text" class="form-control" name="reference" id="reference">
             </div>
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <label>تاریخ</label>
                 <div class="input-group">
-                    <input type="text" class="form-control datepicker" name="issued_at_jalali" id="issued_at_jalali" value="{{ old('issued_at_jalali') ?? '' }}" autocomplete="off">
-                    <input type="hidden" name="issued_at" id="issued_at" value="{{ old('issued_at') }}">
+                    <input type="text" class="form-control datepicker" name="issued_at_jalali" id="issued_at_jalali" value="{{ old('issued_at_jalali') ?? '' }}" readonly autocomplete="off">
                     <button type="button" class="btn btn-outline-secondary" id="openIssuedDatePicker"><i class="fa fa-calendar"></i></button>
                 </div>
             </div>
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <label>تاریخ سررسید</label>
                 <div class="input-group">
-                    <input type="text" class="form-control datepicker" name="due_at_jalali" id="due_at_jalali" value="{{ old('due_at_jalali') ?? '' }}" autocomplete="off">
-                    <input type="hidden" name="due_at" id="due_at" value="{{ old('due_at') }}">
+                    <input type="text" class="form-control datepicker" name="due_at_jalali" id="due_at_jalali" value="{{ old('due_at_jalali') ?? '' }}" readonly autocomplete="off">
                     <button type="button" class="btn btn-outline-secondary" id="openDueDatePicker"><i class="fa fa-calendar"></i></button>
                 </div>
             </div>
@@ -149,31 +148,57 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/sales-invoice-items.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="{{ asset('js/persian-date.js') }}"></script>
+    <!-- ترتیب لود بسیار مهم است -->
+    <script src="{{ asset('js/jquery.min.js') }}"></script>
+    <script src="{{ asset('js/persian-date.min.js') }}"></script>
     <script src="{{ asset('js/persian-datepicker.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('js/sales-invoice-items.js') }}"></script>
     <script src="{{ asset('js/sales-invoice.js') }}"></script>
     <script>
-    // ذخیره اقلام به input مخفی و مدیریت شماره فاکتور دستی/خودکار
-    let isAutoInvoiceNumber = true;
-    document.addEventListener('DOMContentLoaded', function() {
+    $(function() {
+        // فعال‌سازی انتخابگر تاریخ برای هر دو فیلد
+        $("#issued_at_jalali").persianDatepicker({
+            format: "YYYY/MM/DD",
+            autoClose: true,
+            initialValue: false,
+            theme: 'melon',
+        });
+        $("#due_at_jalali").persianDatepicker({
+            format: "YYYY/MM/DD",
+            autoClose: true,
+            initialValue: false,
+            theme: 'melon',
+        });
+
+        // باز کردن پاپ‌آپ با کلیک روی دکمه کنار هر فیلد
+        $('#openIssuedDatePicker').on('click', function(){
+            $("#issued_at_jalali").persianDatepicker('show');
+        });
+        $('#openDueDatePicker').on('click', function(){
+            $("#due_at_jalali").persianDatepicker('show');
+        });
+        // باز کردن با کلیک یا فوکوس روی خود input
+        $('#issued_at_jalali').on('focus click', function(){
+            $(this).persianDatepicker('show');
+        });
+        $('#due_at_jalali').on('focus click', function(){
+            $(this).persianDatepicker('show');
+        });
+
         // سوییچ شماره فاکتور
         const switchInput = document.getElementById('invoiceNumberSwitch');
         const invoiceInput = document.getElementById('invoice_number');
         switchInput.addEventListener('change', function() {
             if (this.checked) {
                 invoiceInput.setAttribute('readonly', 'readonly');
-                // درخواست شماره جدید از سرور
                 fetch('/sales/next-invoice-number')
                     .then(response => response.json())
                     .then(data => {
                         invoiceInput.value = data.number;
                     });
-                isAutoInvoiceNumber = true;
             } else {
                 invoiceInput.removeAttribute('readonly');
-                isAutoInvoiceNumber = false;
                 invoiceInput.focus();
             }
         });
@@ -186,6 +211,8 @@
             let hasItems = (typeof invoiceItems !== 'undefined' && invoiceItems.length > 0);
             if(!hasItems) errors.push('حداقل یک محصول یا خدمت به فاکتور اضافه کنید.');
             if(!invoiceInput.value) errors.push('شماره فاکتور را وارد کنید.');
+            if(!document.getElementById('issued_at_jalali').value) errors.push('تاریخ فاکتور را انتخاب کنید.');
+            if(!document.getElementById('due_at_jalali').value) errors.push('تاریخ سررسید را انتخاب کنید.');
             if(errors.length) {
                 e.preventDefault();
                 Swal.fire({icon:'error', html: errors.join('<br>')});
