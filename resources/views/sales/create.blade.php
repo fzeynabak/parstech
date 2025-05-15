@@ -14,8 +14,12 @@
             position: relative;
             transition: background 0.2s;
         }
-        .form-switch input[type=checkbox] { display: none; }
-        .form-switch input[type=checkbox]:checked + .slider { background: #4caf50; }
+        .form-switch input[type=checkbox] {
+            display: none;
+        }
+        .form-switch input[type=checkbox]:checked + .slider {
+            background: #4caf50;
+        }
         .form-switch .slider:before {
             content: "";
             position: absolute;
@@ -27,7 +31,9 @@
             border-radius: 50%;
             transition: 0.2s;
         }
-        .form-switch input[type=checkbox]:checked + .slider:before { left: 21px; }
+        .form-switch input[type=checkbox]:checked + .slider:before {
+            left: 21px;
+        }
     </style>
 @endsection
 
@@ -65,17 +71,10 @@
                 <input type="text" class="form-control" name="reference" id="reference">
             </div>
             <div class="col-md-3">
-                <label>تاریخ</label>
+                <label>تاریخ صدور</label>
                 <div class="input-group">
-                    <input type="text" class="form-control datepicker" name="issued_at_jalali" id="issued_at_jalali" value="{{ old('issued_at_jalali') ?? '' }}" readonly autocomplete="off" required>
-                    <button type="button" class="btn btn-outline-secondary" id="openIssuedDatePicker"><i class="fa fa-calendar"></i></button>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <label>تاریخ سررسید</label>
-                <div class="input-group">
-                    <input type="text" class="form-control datepicker" name="due_at_jalali" id="due_at_jalali" value="{{ old('due_at_jalali') ?? '' }}" readonly autocomplete="off" required>
-                    <button type="button" class="btn btn-outline-secondary" id="openDueDatePicker"><i class="fa fa-calendar"></i></button>
+                    <input type="text" class="form-control" name="issued_at_jalali" id="issued_at_jalali" value="" readonly autocomplete="off">
+                    <input type="hidden" name="issued_at" id="issued_at" value="">
                 </div>
             </div>
             <div class="col-md-2">
@@ -149,43 +148,27 @@
     <script src="{{ asset('js/sales-invoice.js') }}"></script>
     <script>
     $(function() {
-        // فقط یکبار مقداردهی کنید و initialValue: false (تا خالی باشد)
-        $("#issued_at_jalali").persianDatepicker({
-            format: "YYYY/MM/DD",
-            autoClose: true,
-            initialValue: false,
-            theme: 'melon',
-        });
-        $("#due_at_jalali").persianDatepicker({
-            format: "YYYY/MM/DD",
-            autoClose: true,
-            initialValue: false,
-            theme: 'melon',
-        });
+        // تاریخ روز جاری شمسی و میلادی را ست کن و غیرقابل ویرایش کن
+        if (typeof persianDate !== "undefined") {
+            var now = new persianDate();
+            var jalali = now.format('YYYY/MM/DD HH:mm');
+            // میلادی برای ذخیره در دیتابیس
+            var miladi = now.toLocale('en').format('YYYY-MM-DD HH:mm:ss');
 
-        // باز کردن پاپ‌آپ با دکمه
-        $('#openIssuedDatePicker').on('click', function(){
-            $("#issued_at_jalali").persianDatepicker('show');
-        });
-        $('#openDueDatePicker').on('click', function(){
-            $("#due_at_jalali").persianDatepicker('show');
-        });
+            $('#issued_at_jalali').val(jalali);
+            $('#issued_at').val(miladi);
+        } else {
+            // اگر persianDate نبود، از تاریخ میلادی سیستم استفاده کن
+            var date = new Date();
+            var pad = n => n < 10 ? '0'+n : n;
+            var miladi = date.getFullYear() + '-' + pad(date.getMonth()+1) + '-' + pad(date.getDate()) + ' ' +
+                pad(date.getHours()) + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds());
+            $('#issued_at_jalali').val(miladi);
+            $('#issued_at').val(miladi);
+        }
 
-        // باز شدن با فوکوس یا کلیک روی input
-        $('#issued_at_jalali').on('focus click', function(){
-            $(this).persianDatepicker('show');
-        });
-        $('#due_at_jalali').on('focus click', function(){
-            $(this).persianDatepicker('show');
-        });
-
-        // جلوگیری از تایپ دستی
-        $('#issued_at_jalali, #due_at_jalali').on('keydown paste', function(e){
-            e.preventDefault();
-            return false;
-        });
-
-        // ... بقیه کدهای فرم طبق قبل ...
+        // تاریخ به صورت readonly باشد و کاربر نتواند تغییر دهد
+        $('#issued_at_jalali').prop('readonly', true).css('background', '#eee').css('cursor', 'not-allowed');
     });
     </script>
 @endsection

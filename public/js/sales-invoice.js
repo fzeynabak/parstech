@@ -1,12 +1,9 @@
-// ----------------- شروع اسکریپت تجمیع‌شده -----------------
+// تمام اسکریپت‌های مربوط به فاکتور فروش (بدون تاریخ سررسید)
 
-// متغیر سراسری برای اقلام فاکتور
 let invoiceItems = [];
 
-// اجرای همه اسکریپت‌ها فقط بعد از بارگذاری کامل صفحه
 document.addEventListener("DOMContentLoaded", function () {
 
-    // ----------------- مدیریت نمایش پیام (SweetAlert) -----------------
     function showAlert(message, icon = 'error') {
         if (typeof Swal !== 'undefined') {
             Swal.fire({
@@ -26,58 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // ----------------- فعال‌سازی تقویم شمسی بر روی ورودی‌های تاریخ -----------------
-    function initPersianDatePickers() {
-        if (typeof $ !== 'undefined' && $.fn.persianDatepicker) {
-            $('#issued_at_jalali').persianDatepicker({
-                format: 'YYYY/MM/DD',
-                autoClose: true,
-                initialValue: true,
-                theme: 'melon',
-                onSelect: function (unix) {
-                    let pd = new persianDate(unix).toLocale('en').format('YYYY-MM-DD');
-                    $('#issued_at').val(pd);
-                }
-            });
-
-            $('#due_at_jalali').persianDatepicker({
-                format: 'YYYY/MM/DD',
-                autoClose: true,
-                initialValue: true,
-                theme: 'melon',
-                onSelect: function (unix) {
-                    let pd = new persianDate(unix).toLocale('en').format('YYYY-MM-DD');
-                    $('#due_at').val(pd);
-                }
-            });
-        } else {
-            console.error("persianDatepicker is not loaded or undefined.");
-        }
-    }
-    initPersianDatePickers();
-
-    // باز کردن تقویم با دکمه
-    const openIssuedDatePicker = document.getElementById('openIssuedDatePicker');
-    const openDueDatePicker = document.getElementById('openDueDatePicker');
-    if (openIssuedDatePicker) {
-        openIssuedDatePicker.addEventListener('click', function () {
-            $('#issued_at_jalali').persianDatepicker('show');
-        });
-    }
-    if (openDueDatePicker) {
-        openDueDatePicker.addEventListener('click', function () {
-            $('#due_at_jalali').persianDatepicker('show');
-        });
-    }
-    // باز کردن با کلیک یا فوکوس روی input
-    $('#issued_at_jalali').on('focus click', function(){
-        $(this).persianDatepicker('show');
-    });
-    $('#due_at_jalali').on('focus click', function(){
-        $(this).persianDatepicker('show');
-    });
-
-    // ----------------- مدیریت شماره فاکتور اتوماتیک/دستی -----------------
+    // شماره فاکتور اتوماتیک/دستی
     const invoiceNumberInput = document.getElementById('invoice_number');
     const invoiceNumberSwitch = document.getElementById('invoiceNumberSwitch');
     if (invoiceNumberInput && invoiceNumberSwitch) {
@@ -103,7 +49,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // ----------------- جستجوی مشتری -----------------
+    // جستجوی مشتری
     const customerSearchInput = document.getElementById("customer_search");
     const customerSearchResults = document.getElementById("customer-search-results");
     const customerIdInput = document.getElementById("customer_id");
@@ -146,7 +92,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // ----------------- بارگذاری و رندر لیست محصولات و خدمات -----------------
+    // بارگذاری و رندر لیست محصولات و خدمات
     ['product', 'service'].forEach(type => {
         function renderRows(items) {
             let html = '';
@@ -202,7 +148,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // ----------------- افزودن محصول یا خدمت به فاکتور -----------------
+    // افزودن محصول یا خدمت به فاکتور
     document.body.addEventListener('click', function (e) {
         if (e.target.closest('.add-product-btn')) {
             let btn = e.target.closest('.add-product-btn');
@@ -251,7 +197,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // ----------------- حذف ردیف از فاکتور -----------------
+    // حذف ردیف از فاکتور
     document.body.addEventListener('click', function (e) {
         if (e.target.closest('.remove-invoice-item')) {
             e.preventDefault();
@@ -264,7 +210,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // ----------------- رندر جدول فاکتور و کنترل شرط‌ها -----------------
+    // رندر جدول فاکتور و کنترل شرط‌ها
     function renderInvoiceItemsTable() {
         let tbody = document.getElementById('invoice-items-body');
         if (!tbody) return;
@@ -338,7 +284,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (invoiceTotalEl) invoiceTotalEl.textContent = total.toLocaleString() + ' ریال';
     }
 
-    // ----------------- کنترل شرط‌ها روی ورودی‌های جدول -----------------
+    // کنترل شرط‌ها روی ورودی‌های جدول
     document.body.addEventListener('input', function (e) {
         if (e.target.classList.contains('item-count-input')) {
             let idx = parseInt(e.target.dataset.idx);
@@ -384,7 +330,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // ----------------- ذخیره اقلام به input مخفی هنگام ثبت فرم -----------------
+    // ذخیره اقلام به input مخفی هنگام ثبت فرم
     let salesForm = document.getElementById('sales-invoice-form');
     if (salesForm) {
         salesForm.addEventListener('submit', function(e) {
@@ -394,6 +340,4 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-
 });
-// ----------------- پایان اسکریپت تجمیع‌شده -----------------
