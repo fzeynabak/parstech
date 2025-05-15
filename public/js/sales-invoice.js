@@ -80,8 +80,10 @@ document.addEventListener("DOMContentLoaded", function () {
     // ------------------ افزودن محصول یا خدمت به فاکتور ------------------
     document.body.addEventListener('click', function (e) {
         if (e.target.closest('.add-product-btn')) {
-            e.preventDefault();
             let btn = e.target.closest('.add-product-btn');
+            // اگر دکمه hidden یا disabled بود هیچ کاری نکن
+            if (btn.classList.contains('d-none') || btn.disabled) return;
+            e.preventDefault();
             let id = String(btn.dataset.id).trim();
             let type = String(btn.dataset.type).trim();
 
@@ -89,10 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then(response => response.json())
                 .then(item => {
                     let stock = parseInt(item.stock) || 0;
-                    if (stock < 1) {
-                        showAlert(`محصول "${item.name}" موجودی ندارد و قابل افزودن نیست!`);
-                        return;
-                    }
+                    if (stock < 1) return; // اطمینان نهایی
                     let idx = invoiceItems.findIndex(x => x.id == id && x.type == type);
                     if (idx > -1) {
                         if (invoiceItems[idx].count >= stock) {
@@ -103,6 +102,14 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
                         invoiceItems[idx].count += 1;
                         renderInvoiceItemsTable();
+                        Swal.fire({
+                            icon: 'success',
+                            text: `تعداد این محصول در فاکتور افزایش یافت.`,
+                            timer: 1500,
+                            showConfirmButton: false,
+                            position: 'top-end',
+                            toast: true
+                        });
                         return;
                     } else {
                         item.count = 1;
@@ -247,6 +254,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+
+    
     // ------------------ سایر بخش‌ها مثل تقویم، شماره فاکتور و جستجو ------------------
     // (کدهای قبلی شما اینجا قرار می‌گیرند، این بخش به شرط‌ها و کنترل محصولات مرتبط نیست)
 });

@@ -1,56 +1,520 @@
+/* ==================== متغیرهای اصلی ==================== */
+:root {
+    /* رنگ‌های اصلی */
+    --primary-color: #2563eb;
+    --secondary-color: #3b82f6;
+    --accent-color: #1d4ed8;
+    --success-color: #059669;
+    --danger-color: #dc2626;
+    --warning-color: #d97706;
+    --info-color: #0891b2;
+
+    /* رنگ‌های متن */
+    --text-primary: #1e293b;
+    --text-secondary: #475569;
+    --text-light: #94a3b8;
+
+    /* رنگ‌های پس‌زمینه */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-accent: #f1f5f9;
+    --bg-light: #e2e8f0;
+
+    /* سایه‌ها */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+    /* گرادیانت‌ها */
+    --gradient-primary: linear-gradient(to right, #2563eb, #3b82f6);
+    --gradient-secondary: linear-gradient(to right, #475569, #64748b);
+    --gradient-success: linear-gradient(to right, #059669, #10b981);
+
+    /* Border Radius */
+    --radius-sm: 0.25rem;
+    --radius-md: 0.375rem;
+    --radius-lg: 0.5rem;
+    --radius-xl: 0.75rem;
+    --radius-2xl: 1rem;
+
+    /* Spacing */
+    --spacing-1: 0.25rem;
+    --spacing-2: 0.5rem;
+    --spacing-3: 0.75rem;
+    --spacing-4: 1rem;
+    --spacing-5: 1.25rem;
+    --spacing-6: 1.5rem;
+    --spacing-8: 2rem;
+    --spacing-10: 2.5rem;
+    --spacing-12: 3rem;
+
+    /* فونت‌ها */
+    --font-primary: 'AnjomanMax', Tahoma, sans-serif;
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+    --font-size-2xl: 1.5rem;
+}
+
+/* ==================== استایل‌های پایه ==================== */
+body {
+    font-family: var(--font-primary);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+/* ==================== کانتینر اصلی فاکتور ==================== */
 .sales-invoice-container {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-    padding: 20px 24px;
-    margin-bottom: 32px;
+    background: var(--bg-primary);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-xl);
+    margin: 2rem auto;
+    max-width: 1200px;
+    position: relative;
+    overflow: hidden;
 }
 
+/* ==================== هدر فاکتور ==================== */
 .sales-invoice-header {
-    border-bottom: 1px solid #eee;
-    padding-bottom: 8px;
-    margin-bottom: 16px;
+    background: var(--gradient-primary);
+    padding: var(--spacing-6) var(--spacing-8);
+    color: white;
+    position: relative;
 }
 
-.sales-product-table-container {
-    background: #fafbfc;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-    padding: 10px 10px 0 10px;
+.sales-invoice-header h2 {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
 }
 
-.sales-product-table th,
-.sales-invoice-items-table th {
-    background: #f6f6f6;
+.sales-invoice-header .header-actions {
+    position: absolute;
+    left: var(--spacing-8);
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: var(--spacing-3);
+}
+
+/* ==================== فرم اطلاعات فاکتور ==================== */
+.invoice-info-section {
+    padding: var(--spacing-6);
+    background: var(--bg-accent);
+    border-bottom: 1px solid var(--bg-light);
+}
+
+.invoice-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-4);
+}
+
+.form-group {
+    margin-bottom: var(--spacing-4);
+}
+
+.form-group label {
+    display: block;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--spacing-2);
+    font-weight: 500;
+}
+
+.form-control {
+    width: 100%;
+    padding: var(--spacing-3);
+    border: 1px solid var(--bg-light);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
+    transition: all 0.2s ease;
+    background: var(--bg-primary);
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+    outline: none;
+}
+
+/* ==================== جدول محصولات ==================== */
+.products-section {
+    padding: var(--spacing-6);
+}
+
+.products-tabs {
+    margin-bottom: var(--spacing-6);
+    border-bottom: 1px solid var(--bg-light);
+}
+
+.products-tabs .nav-link {
+    padding: var(--spacing-3) var(--spacing-6);
+    color: var(--text-secondary);
+    font-weight: 500;
+    border: none;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.products-tabs .nav-link.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+.product-search {
+    position: relative;
+    margin-bottom: var(--spacing-6);
+}
+
+.product-search input {
+    padding-right: var(--spacing-12);
+    background: var(--bg-accent);
+}
+
+.product-search i {
+    position: absolute;
+    right: var(--spacing-4);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-light);
+}
+
+.products-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 var(--spacing-2);
+}
+
+.products-table th {
+    background: var(--bg-accent);
+    padding: var(--spacing-3);
     font-weight: 600;
+    color: var(--text-secondary);
+    text-align: right;
+}
+
+.products-table td {
+    background: var(--bg-primary);
+    padding: var(--spacing-3);
+    vertical-align: middle;
+    border-bottom: 1px solid var(--bg-light);
+}
+
+/* ==================== جدول اقلام فاکتور ==================== */
+.invoice-items-section {
+    padding: var(--spacing-6);
+    background: var(--bg-accent);
+}
+
+.invoice-items-table {
+    width: 100%;
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.invoice-items-table th {
+    background: var(--gradient-primary);
+    color: white;
+    padding: var(--spacing-4);
+    font-weight: 500;
     text-align: center;
 }
 
-.sales-product-table td,
-.sales-invoice-items-table td {
+.invoice-items-table td {
+    padding: var(--spacing-3);
     text-align: center;
     vertical-align: middle;
+    border-bottom: 1px solid var(--bg-light);
 }
 
-.sales-invoice-items-table .input-sm {
-    max-width: 60px;
-    padding: 2px 4px;
-    font-size: 14px;
+.invoice-items-table .form-control {
     text-align: center;
+    max-width: 100px;
+    margin: 0 auto;
+    padding: var(--spacing-2);
+    font-size: var(--font-size-sm);
 }
 
-.sales-invoice-actions button {
-    margin-right: 8px;
+.invoice-items-table tfoot td {
+    background: var(--bg-accent);
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
-@media (max-width: 991px) {
+/* ==================== دکمه‌ها ==================== */
+.btn {
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    cursor: pointer;
+    border: none;
+    font-size: var(--font-size-base);
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--accent-color);
+}
+
+.btn-secondary {
+    background: var(--bg-accent);
+    color: var(--text-secondary);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-light);
+}
+
+.btn-success {
+    background: var(--success-color);
+    color: white;
+}
+
+.btn-success:hover {
+    background: #047857;
+}
+
+.btn-danger {
+    background: var(--danger-color);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+}
+
+.btn-icon {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+}
+
+/* ==================== افکت‌های متحرک ==================== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* ==================== المان‌های کمکی ==================== */
+.badge {
+    display: inline-block;
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+}
+
+.badge-success {
+    background: var(--success-color);
+    color: white;
+}
+
+.badge-warning {
+    background: var(--warning-color);
+    color: white;
+}
+
+.badge-danger {
+    background: var(--danger-color);
+    color: white;
+}
+
+/* ==================== اسکرول‌بار سفارشی ==================== */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-light);
+    border-radius: var(--radius-md);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--text-light);
+    border-radius: var(--radius-md);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+}
+
+/* ==================== پاسخگویی ==================== */
+@media screen and (max-width: 1200px) {
     .sales-invoice-container {
-        padding: 8px 2px;
-    }
-    .sales-invoice-header h2 {
-        font-size: 20px;
+        margin: var(--spacing-4);
     }
 }
-div#customer-search-results {
-    width: 310px !important;
+
+@media screen and (max-width: 991px) {
+    .invoice-info-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+
+    .products-section,
+    .invoice-items-section {
+        padding: var(--spacing-4);
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .sales-invoice-header {
+        padding: var(--spacing-4);
+    }
+
+    .sales-invoice-header h2 {
+        font-size: var(--font-size-xl);
+    }
+
+    .header-actions {
+        position: static;
+        margin-top: var(--spacing-4);
+        transform: none;
+    }
+
+    .invoice-items-table {
+        display: block;
+        overflow-x: auto;
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .products-tabs .nav-link {
+        padding: var(--spacing-2) var(--spacing-4);
+        font-size: var(--font-size-sm);
+    }
+
+    .form-group label {
+        font-size: var(--font-size-xs);
+    }
+
+    .btn {
+        font-size: var(--font-size-sm);
+    }
+}
+
+/* ==================== انیمیشن‌ها ==================== */
+@keyframes slideIn {
+    from {
+        transform: translateX(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.pulse {
+    animation: pulse 1s infinite;
+}
+
+/* ==================== کامپوننت‌های اضافی ==================== */
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip:hover::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: var(--spacing-2) var(--spacing-3);
+    background: var(--text-primary);
+    color: white;
+    font-size: var(--font-size-xs);
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+    z-index: 1000;
+}
+
+.loading-spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid var(--bg-light);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ==================== افکت‌های تعاملی ==================== */
+.hover-scale {
+    transition: transform 0.2s ease;
+}
+
+.hover-scale:hover {
+    transform: scale(1.02);
+}
+
+.hover-shadow {
+    transition: box-shadow 0.2s ease;
+}
+
+.hover-shadow:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
 }
