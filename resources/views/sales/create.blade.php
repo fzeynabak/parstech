@@ -141,7 +141,7 @@
     <script src="{{ asset('js/sales-invoice.js') }}"></script>
     <script>
     $(function() {
-        // مقداردهی خودکار تاریخ صدور به امروز شمسی و غیرقابل ویرایش
+        // مقداردهی فقط برای نمایش (سمت سرور ثبت نمی‌شود!)
         if (typeof persianDate !== "undefined") {
             var now = new persianDate();
             var jalali = now.format('YYYY/MM/DD');

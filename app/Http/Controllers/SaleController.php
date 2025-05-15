@@ -8,7 +8,6 @@ use App\Models\Product;
 use App\Models\Currency;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Morilog\Jalali\Jalalian;
 
 class SaleController extends Controller
 {
@@ -32,7 +31,6 @@ class SaleController extends Controller
             'customer_id' => 'required|exists:persons,id',
             'seller_id' => 'required|exists:sellers,id',
             'currency_id' => 'required|exists:currencies,id',
-            'issued_at_jalali' => 'required',
             'products_input' => 'required',
         ], [
             'customer_id.required' => 'مشتری را انتخاب کنید.',
@@ -41,15 +39,8 @@ class SaleController extends Controller
             'products_input.required' => 'حداقل یک محصول یا خدمت به فاکتور اضافه کنید.',
         ]);
 
-        // کنترل مقدار تاریخ و تبدیل با هندل خطا
-        if (empty($request->issued_at_jalali)) {
-            return back()->withInput()->withErrors(['dates' => 'تاریخ فاکتور وارد نشده است.']);
-        }
-        try {
-            $issued_at = Jalalian::fromFormat('Y/m/d', $request->issued_at_jalali)->toCarbon();
-        } catch (\Exception $ex) {
-            return back()->withInput()->withErrors(['dates' => 'فرمت تاریخ وارد شده صحیح نیست. لطفاً مجدداً انتخاب کنید.']);
-        }
+        // تاریخ صدور را همین لحظه بگیر و هرگز از ورودی نفرست
+        $issued_at = now();
 
         DB::beginTransaction();
         try {
@@ -67,7 +58,7 @@ class SaleController extends Controller
             $items = json_decode($request->products_input, true);
             if (empty($items)) throw new \Exception("هیچ محصول یا خدمتی برای ثبت وجود ندارد.");
 
-            // ادامه منطق ذخیره محصولات و ... طبق قبل
+            // ادامه منطق ثبت اقلام و غیره...
 
             DB::commit();
             return redirect()->route('sales.index')->with('success', 'فاکتور با موفقیت ثبت شد.');
