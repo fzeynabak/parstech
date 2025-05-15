@@ -1,8 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // --- فعال‌سازی تقویم شمسی ---
+    // فعال‌سازی تقویم شمسی
     function initPersianDatePickers() {
         if (typeof $ !== 'undefined' && $.fn.persianDatepicker) {
-            // تاریخ صدور
             $('#issued_at_jalali').persianDatepicker({
                 format: 'YYYY/MM/DD',
                 autoClose: true,
@@ -13,7 +12,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             });
 
-            // تاریخ سررسید
             $('#due_at_jalali').persianDatepicker({
                 format: 'YYYY/MM/DD',
                 autoClose: true,
@@ -31,22 +29,20 @@ document.addEventListener("DOMContentLoaded", function () {
     // اجرای تقویم شمسی
     initPersianDatePickers();
 
-    // دکمه باز کردن تقویم
+    // دکمه باز کردن تقویم: باید مستقیماً show() را صدا بزند (نه فقط focus)
     const openIssuedDatePicker = document.getElementById('openIssuedDatePicker');
     const openDueDatePicker = document.getElementById('openDueDatePicker');
-    if (openIssuedDatePicker && openDueDatePicker) {
+    if (openIssuedDatePicker) {
         openIssuedDatePicker.addEventListener('click', function () {
-            $('#issued_at_jalali').focus();
+            $('#issued_at_jalali').persianDatepicker('show');
         });
-
+    }
+    if (openDueDatePicker) {
         openDueDatePicker.addEventListener('click', function () {
-            $('#due_at_jalali').focus();
+            $('#due_at_jalali').persianDatepicker('show');
         });
-    } else {
-        console.error("Datepicker buttons not found in DOM.");
     }
 
-    // --- سایر بخش‌ها ---
     // شماره فاکتور اتوماتیک
     const invoiceNumberInput = document.getElementById('invoice_number');
     const invoiceNumberSwitch = document.getElementById('invoiceNumberSwitch');
@@ -73,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // جستجوی مشتری - بدون تغییر
+    // جستجوی مشتری
     const customerSearchInput = document.getElementById("customer_search");
     const customerSearchResults = document.getElementById("customer-search-results");
     const customerIdInput = document.getElementById("customer_id");
@@ -115,6 +111,4 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-
-
 });

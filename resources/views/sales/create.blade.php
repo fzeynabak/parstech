@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
 @section('styles')
-<link rel="stylesheet" href="{{ asset('css/persianDatepicker-melon.css') }}">
-<link rel="stylesheet" href="{{ asset('css/sales-invoice.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/persianDatepicker-melon.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/sales-invoice.css') }}">
 @endsection
 
 @section('content')
@@ -139,8 +139,10 @@
 @endsection
 
 @section('scripts')
-<script src="{{ asset('js/persian-date.js') }}"></script>
-<script src="{{ asset('js/persian-datepicker.min.js') }}"></script>
-<script src="{{ asset('js/sales-invoice.js') }}"></script>
 <script src="{{ asset('js/sales-invoice-items.js') }}"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('js/persian-date.js') }}"></script>
+    <script src="{{ asset('js/persian-datepicker.min.js') }}"></script>
+    <script src="{{ asset('js/sales-invoice.js') }}"></script>
 @endsection
