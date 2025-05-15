@@ -10,18 +10,29 @@ class Sale extends Model
     use HasFactory;
 
     protected $fillable = [
-        'seller_id', 'product_id', 'quantity', 'total_price', 'sale_date'
+        'invoice_number',
+        'reference',
+        'customer_id',
+        'seller_id',
+        'currency_id',
+        'title',
+        'issued_at',
+        'due_at',
+        'total_price',
     ];
 
-    // ارتباط با فروشنده
     public function seller()
     {
         return $this->belongsTo(Seller::class);
     }
 
-    // ارتباط با محصول
-    public function product()
+    public function customer()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Person::class, 'customer_id');
+    }
+
+    public function items()
+    {
+        return $this->hasMany(SaleItem::class);
     }
 }

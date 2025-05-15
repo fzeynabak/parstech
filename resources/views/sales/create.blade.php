@@ -9,10 +9,14 @@
 <div class="sales-invoice-container">
     <div class="sales-invoice-header d-flex align-items-center justify-content-between mb-3">
         <h2 class="mb-0"><i class="fa fa-file-invoice-dollar ms-2"></i> فاکتور فروش</h2>
-        <div class="sales-invoice-actions">
-            <!-- دکمه‌های غیرثبت حذف شدند -->
-        </div>
     </div>
+
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+    @if($errors->any())
+        <div class="alert alert-danger">{{ implode('، ', $errors->all()) }}</div>
+    @endif
 
     <form id="sales-invoice-form" class="row g-3" autocomplete="off" method="POST" action="{{ route('sales.store') }}">
         @csrf
@@ -22,12 +26,6 @@
                 <label>شماره</label>
                 <div class="input-group">
                     <input type="text" class="form-control" name="invoice_number" id="invoice_number" value="{{ old('invoice_number', $nextNumber ?? '') }}" readonly required>
-                    <span class="input-group-text bg-white border-0">
-                        <label class="form-switch m-0" style="cursor:pointer;">
-                            <input type="checkbox" id="invoiceNumberSwitch" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </span>
                 </div>
             </div>
             <div class="col-md-2">
@@ -50,7 +48,6 @@
                     <button type="button" class="btn btn-outline-secondary" id="openDueDatePicker"><i class="fa fa-calendar"></i></button>
                 </div>
             </div>
-            <!-- پروژه حذف شد -->
             <div class="col-md-2">
                 <label>واحد پول</label>
                 <select class="form-select" name="currency_id" id="currency_id" required>
@@ -99,6 +96,8 @@
             </div>
         </div>
 
+        <input type="hidden" name="products_input" id="products_input">
+
         <div class="row align-items-center mt-4">
             <div class="col-md-9 text-end">
                 <div>تعداد کل: <span id="total_count">۰</span></div>
@@ -119,17 +118,20 @@
     <script src="{{ asset('js/persian-datepicker.min.js') }}"></script>
     <script src="{{ asset('js/sales-invoice.js') }}"></script>
     <script>
+    // ذخیره اقلام به input مخفی
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('sales-invoice-form').addEventListener('submit', function(e) {
             let errors = [];
             if(!document.getElementById('customer_id').value) errors.push('مشتری را انتخاب کنید.');
             if(!document.getElementById('seller_id').value) errors.push('فروشنده را انتخاب کنید.');
             if(!document.getElementById('currency_id').value) errors.push('واحد پول را انتخاب کنید.');
-            let hasItems = (document.querySelectorAll('#invoice-items-body tr').length > 0);
+            let hasItems = (typeof invoiceItems !== 'undefined' && invoiceItems.length > 0);
             if(!hasItems) errors.push('حداقل یک محصول یا خدمت به فاکتور اضافه کنید.');
             if(errors.length) {
                 e.preventDefault();
                 Swal.fire({icon:'error', html: errors.join('<br>')});
+            } else {
+                document.getElementById('products_input').value = JSON.stringify(invoiceItems);
             }
         });
     });
