@@ -95,10 +95,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-3">
-                <label>درصد مالیات</label>
-                <input type="number" class="form-control" name="tax_percent" id="tax_percent" min="0" max="100" value="{{ old('tax_percent', 0) }}">
-            </div>
+            <!-- فیلد مالیات درصدی بالا حذف شد -->
         </div>
 
         <div class="row">
@@ -139,8 +136,7 @@
 @endsection
 
 @section('scripts')
-<script src="{{ asset('js/sales-invoice-items.js') }}"></script>
-
+    <script src="{{ asset('js/sales-invoice-items.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ asset('js/persian-date.js') }}"></script>
     <script src="{{ asset('js/persian-datepicker.min.js') }}"></script>
