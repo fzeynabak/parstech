@@ -34,6 +34,10 @@ use App\Http\Controllers\Api\ProductApiController;
 use App\Http\Controllers\Api\ServiceApiController;
 
 
+Route::get('/products/ajax-list', [ProductController::class, 'ajaxList']);
+Route::get('/services/ajax-list', [ServiceController::class, 'ajaxList']);
+Route::get('/sales/item-info', [ProductController::class, 'itemInfo']); // اگر نوع = product
+Route::get('/sales/item-info', [ServiceController::class, 'itemInfo']); // اگر نوع = service
 
 
 
@@ -232,9 +236,5 @@ Route::get('/api/categories', [CategoryController::class, 'apiList']);
 
 
 
-Route::get('/products/ajax-list', [ProductController::class, 'ajaxList']);
-Route::get('/services/ajax-list', [ServiceController::class, 'ajaxList']);
-Route::get('/sales/item-info', [ProductController::class, 'itemInfo']); // اگر نوع = product
-Route::get('/sales/item-info', [ServiceController::class, 'itemInfo']); // اگر نوع = service
 
 require __DIR__.'/auth.php';

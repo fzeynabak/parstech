@@ -10,11 +10,8 @@ class Service extends Model
         'code', 'name', 'category_id', 'price', 'is_active'
     ];
 
-    public function category()
-    {
-        return $this->belongsTo(Category::class);
-    }
     public function category() {
         return $this->belongsTo(Category::class, 'category_id');
     }
+
 }

@@ -48,14 +48,12 @@ class ProductController extends Controller
      * Route: /sales/item-info?id=...&type=product
      */
     public function itemInfo(Request $request)
-    {
-        $id = $request->input('id');
-        $product = Product::with('category')->where('id', $id)
-            ->whereHas('category', function($q) {
-                $q->where('category_type', 'product');
-            })
-            ->firstOrFail();
+{
+    $id = $request->input('id');
+    $type = $request->input('type');
 
+    if ($type === 'product') {
+        $product = Product::with('category')->findOrFail($id);
         return response()->json([
             'id' => $product->id,
             'code' => $product->code,
@@ -64,8 +62,22 @@ class ProductController extends Controller
             'stock' => $product->stock,
             'sell_price' => $product->sell_price,
             'category' => $product->category->name ?? '-',
-            'category_type' => $product->category->category_type ?? '-',
             'unit' => $product->unit ?? '-',
         ]);
+    } elseif ($type === 'service') {
+        $service = Service::with('category')->findOrFail($id);
+        return response()->json([
+            'id' => $service->id,
+            'code' => $service->code,
+            'name' => $service->name,
+            'image' => $service->image,
+            'stock' => $service->stock,
+            'sell_price' => $service->sell_price,
+            'category' => $service->category->name ?? '-',
+            'unit' => $service->unit ?? '-',
+        ]);
     }
+
+    return response()->json(['error' => 'Invalid type'], 400);
+}
 }
