@@ -33,10 +33,10 @@ use App\Http\Controllers\Api\CategoryApiController;
 use App\Http\Controllers\Api\ProductApiController;
 use App\Http\Controllers\Api\ServiceApiController;
 
+Route::get('/sales/item-info', [ProductController::class, 'itemInfo']); // اگر نوع = product
 
 Route::get('/products/ajax-list', [ProductController::class, 'ajaxList']);
 Route::get('/services/ajax-list', [ServiceController::class, 'ajaxList']);
-Route::get('/sales/item-info', [ProductController::class, 'itemInfo']); // اگر نوع = product
 Route::get('/sales/item-info', [ServiceController::class, 'itemInfo']); // اگر نوع = service
 
 

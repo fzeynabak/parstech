@@ -164,12 +164,13 @@ document.addEventListener("DOMContentLoaded", function () {
             let type = btn.dataset.type;
             // باید اینجا با ایجکس اطلاعات محصول را گرفته و به جدول سبد خرید اضافه کنید
             // مثال:
-            fetch(`/sales/item-info?id=${id}&type=${type}`)
-                .then(r => r.json())
-                .then(item => {
-                    // تابع افزودن به جدول سبد خرید را صدا بزنید
-                    addToCart(item);
-                });
+                fetch(`/sales/item-info?id=${id}&type=${type}`)
+                    .then(response => response.json())
+                    .then(item => {
+                        // افزودن به جدول فاکتور
+                        addToCart(item);
+                    })
+                    .catch(error => console.error('Error:', error));
         }
         if (e.target.closest('.remove-invoice-item')) {
             e.preventDefault();

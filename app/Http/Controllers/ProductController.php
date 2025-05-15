@@ -48,36 +48,37 @@ class ProductController extends Controller
      * Route: /sales/item-info?id=...&type=product
      */
     public function itemInfo(Request $request)
-{
-    $id = $request->input('id');
-    $type = $request->input('type');
+    {
+        $id = $request->input('id');
+        $type = $request->input('type');
 
-    if ($type === 'product') {
-        $product = Product::with('category')->findOrFail($id);
-        return response()->json([
-            'id' => $product->id,
-            'code' => $product->code,
-            'name' => $product->name,
-            'image' => $product->image,
-            'stock' => $product->stock,
-            'sell_price' => $product->sell_price,
-            'category' => $product->category->name ?? '-',
-            'unit' => $product->unit ?? '-',
-        ]);
-    } elseif ($type === 'service') {
-        $service = Service::with('category')->findOrFail($id);
-        return response()->json([
-            'id' => $service->id,
-            'code' => $service->code,
-            'name' => $service->name,
-            'image' => $service->image,
-            'stock' => $service->stock,
-            'sell_price' => $service->sell_price,
-            'category' => $service->category->name ?? '-',
-            'unit' => $service->unit ?? '-',
-        ]);
+        if ($type === 'product') {
+            $product = Product::with('category')->findOrFail($id);
+            return response()->json([
+                'id' => $product->id,
+                'code' => $product->code,
+                'name' => $product->name,
+                'image' => $product->image,
+                'stock' => $product->stock,
+                'sell_price' => $product->sell_price,
+                'category' => $product->category->name ?? '-',
+                'unit' => $product->unit ?? '-',
+            ]);
+        } elseif ($type === 'service') {
+            // اگر نوع خدمت باشد
+            $service = Service::with('category')->findOrFail($id);
+            return response()->json([
+                'id' => $service->id,
+                'code' => $service->code,
+                'name' => $service->name,
+                'image' => $service->image,
+                'stock' => $service->stock,
+                'sell_price' => $service->sell_price,
+                'category' => $service->category->name ?? '-',
+                'unit' => $service->unit ?? '-',
+            ]);
+        }
+
+        return response()->json(['error' => 'Invalid type'], 400);
     }
-
-    return response()->json(['error' => 'Invalid type'], 400);
-}
 }
