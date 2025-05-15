@@ -1,7 +1,6 @@
-document.addEventListener("DOMContentLoaded", function () {
-    // آرایه اقلام فاکتور
-    let invoiceItems = [];
+let invoiceItems = [];
 
+document.addEventListener("DOMContentLoaded", function () {
     function showAlert(message, icon = 'error') {
         if (typeof Swal !== 'undefined') {
             Swal.fire({
@@ -21,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // ----------- بارگذاری و رندر لیست محصولات و خدمات با کنترل دکمه و رنگ پس‌زمینه -----------
+    // بارگذاری و رندر لیست محصولات و خدمات
     ['product', 'service'].forEach(type => {
         function renderRows(items) {
             let html = '';
@@ -77,7 +76,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // ------------------ افزودن محصول یا خدمت به فاکتور ------------------
+    // افزودن محصول یا خدمت به فاکتور
     document.body.addEventListener('click', function (e) {
         if (e.target.closest('.add-product-btn')) {
             let btn = e.target.closest('.add-product-btn');
@@ -126,7 +125,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // ------------------ حذف ردیف از فاکتور ------------------
+    // حذف ردیف از فاکتور
     document.body.addEventListener('click', function (e) {
         if (e.target.closest('.remove-invoice-item')) {
             e.preventDefault();
@@ -139,16 +138,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // ------------------ رندر جدول فاکتور و کنترل شرط‌ها ------------------
+    // رندر جدول فاکتور و کنترل شرط‌ها
     function renderInvoiceItemsTable() {
         let tbody = document.getElementById('invoice-items-body');
         if (!tbody) return;
-
-        // ذخیره فوکوس و مقدار ورودی‌ها (بدون setSelectionRange برای type="number")
-        let focusedElem = document.activeElement;
-        let focusedName = focusedElem ? focusedElem.getAttribute('name') : null;
-        let focusedIdx = focusedElem ? focusedElem.getAttribute('data-idx') : null;
-        let focusedValue = focusedElem ? focusedElem.value : null;
 
         tbody.innerHTML = '';
         let total = 0, count = 0;
@@ -211,19 +204,6 @@ document.addEventListener("DOMContentLoaded", function () {
             tbody.appendChild(row);
         });
 
-        // بازگرداندن فوکوس و مقدار ورودی قبلی (بدون setSelectionRange برای type="number")
-        if (focusedName && focusedIdx !== null) {
-            let selector = `[name="${focusedName}"][data-idx="${focusedIdx}"]`;
-            let input = tbody.querySelector(selector);
-            if (input) {
-                input.focus();
-                if (focusedValue !== null && input.value !== focusedValue) {
-                    input.value = focusedValue;
-                }
-                // setSelectionRange را برای type="number" اجرا نکن!
-            }
-        }
-
         let totalCountEl = document.getElementById('total_count');
         let totalAmountEl = document.getElementById('total_amount');
         let invoiceTotalEl = document.getElementById('invoice-total-amount');
@@ -232,7 +212,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (invoiceTotalEl) invoiceTotalEl.textContent = total.toLocaleString() + ' ریال';
     }
 
-    // ------------------ کنترل شرط‌ها روی ورودی‌های جدول ------------------
+    // کنترل شرط‌ها روی ورودی‌های جدول
     document.body.addEventListener('input', function (e) {
         if (e.target.classList.contains('item-count-input')) {
             let idx = parseInt(e.target.dataset.idx);
@@ -278,5 +258,15 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // سایر کدها مثل تقویم و جستجو...
+    // برای ذخیره اقلام در input مخفی هنگام ثبت فرم
+    let salesForm = document.getElementById('sales-invoice-form');
+    if (salesForm) {
+        salesForm.addEventListener('submit', function(e) {
+            // مقدار invoiceItems را به input مخفی منتقل کن
+            let productsInput = document.getElementById('products_input');
+            if(productsInput) {
+                productsInput.value = JSON.stringify(invoiceItems);
+            }
+        });
+    }
 });
