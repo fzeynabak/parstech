@@ -69,13 +69,9 @@ body {
 
 /* ==================== کانتینر اصلی فاکتور ==================== */
 .sales-invoice-container {
-    background: var(--bg-primary);
-    border-radius: var(--radius-2xl);
-    box-shadow: var(--shadow-xl);
-    margin: 2rem auto;
-    max-width: 1200px;
-    position: relative;
-    overflow: hidden;
+    padding: 2rem ;
+
+
 }
 
 /* ==================== هدر فاکتور ==================== */

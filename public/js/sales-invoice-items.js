@@ -1,35 +1,45 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // تقویم شمسی
-    if (typeof $ !== 'undefined' && $.fn.persianDatepicker) {
-        // تاریخ صدور
-        $('#issued_at_jalali').persianDatepicker({
-            format: 'YYYY/MM/DD',
-            initialValue: !!$('#issued_at_jalali').val(),
-            autoClose: true,
-            onSelect: function(unix) {
-                let pd = new persianDate(unix).toLocale('en').format('YYYY-MM-DD');
-                $('#issued_at').val(pd);
+    // --- فعال‌سازی تقویم شمسی ---
+    function initPersianDatePickers() {
+        if (typeof $ !== 'undefined' && $.fn.persianDatepicker) {
+            // تاریخ صدور
+            if ($('#issued_at_jalali').length) {
+                $('#issued_at_jalali').persianDatepicker({
+                    format: 'YYYY/MM/DD',
+                    autoClose: true,
+                    initialValue: !!$('#issued_at_jalali').val(),
+                    onSelect: function (unix) {
+                        let pd = new persianDate(unix).toLocale('en').format('YYYY-MM-DD');
+                        $('#issued_at').val(pd);
+                    }
+                });
             }
-        });
-        // تاریخ سررسید
-        $('#due_at_jalali').persianDatepicker({
-            format: 'YYYY/MM/DD',
-            initialValue: !!$('#due_at_jalali').val(),
-            autoClose: true,
-            onSelect: function(unix) {
-                let pd = new persianDate(unix).toLocale('en').format('YYYY-MM-DD');
-                $('#due_at').val(pd);
+            // تاریخ سررسید
+            if ($('#due_at_jalali').length) {
+                $('#due_at_jalali').persianDatepicker({
+                    format: 'YYYY/MM/DD',
+                    autoClose: true,
+                    initialValue: !!$('#due_at_jalali').val(),
+                    onSelect: function (unix) {
+                        let pd = new persianDate(unix).toLocale('en').format('YYYY-MM-DD');
+                        $('#due_at').val(pd);
+                    }
+                });
             }
-        });
+        }
     }
 
-    // شماره فاکتور اتوماتیک و سوییچ
+    // اجرای تقویم شمسی
+    initPersianDatePickers();
+
+    // --- سایر بخش‌ها ---
+    // شماره فاکتور اتوماتیک
     const invoiceNumberInput = document.getElementById('invoice_number');
     const invoiceNumberSwitch = document.getElementById('invoiceNumberSwitch');
     if (invoiceNumberInput && invoiceNumberSwitch) {
         function setInvoiceNumberReadOnly(isAuto) {
             invoiceNumberInput.readOnly = isAuto;
-            if(isAuto) {
+            if (isAuto) {
                 fetch('/api/invoices/next-number')
                     .then(response => response.json())
                     .then(data => {
@@ -44,13 +54,12 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
         setInvoiceNumberReadOnly(invoiceNumberSwitch.checked);
-        invoiceNumberSwitch.addEventListener('change', function(){
+        invoiceNumberSwitch.addEventListener('change', function () {
             setInvoiceNumberReadOnly(this.checked);
         });
     }
 
-
-    // جستجوی مشتری
+    // جستجوی مشتری - بدون تغییر
     const customerSearchInput = document.getElementById("customer_search");
     const customerSearchResults = document.getElementById("customer-search-results");
     const customerIdInput = document.getElementById("customer_id");
@@ -92,13 +101,4 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-
-
-
-
-
-
-
-
-
 });

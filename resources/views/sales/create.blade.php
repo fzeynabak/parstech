@@ -36,11 +36,12 @@
                 <label>تاریخ</label>
                 <input type="text" class="form-control datepicker" name="issued_at_jalali" id="issued_at_jalali" value="{{ old('issued_at_jalali') ?? '' }}" autocomplete="off">
                 <input type="hidden" name="issued_at" id="issued_at" value="{{ old('issued_at') }}">
+
             </div>
             <div class="col-md-2">
                 <label>تاریخ سررسید</label>
                 <input type="text" class="form-control datepicker" name="due_at_jalali" id="due_at_jalali" value="{{ old('due_at_jalali') ?? '' }}" autocomplete="off">
-                <input type="hidden" name="due_at" id="due_at" value="{{ old('due_at') }}">
+<input type="hidden" name="due_at" id="due_at" value="{{ old('due_at') }}">
             </div>
             <div class="col-md-2">
                 <label>پروژه</label>
@@ -130,10 +131,9 @@
 @endsection
 
 @section('scripts')
-<script src="{{ asset('js/sales-invoice.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="{{ asset('js/persian-date.js') }}"></script>
 <script src="{{ asset('js/persian-datepicker.min.js') }}"></script>
-
+<script src="{{ asset('js/sales-invoice.js') }}"></script>
 <script src="{{ asset('js/sales-invoice-items.js') }}"></script>
 @endsection
