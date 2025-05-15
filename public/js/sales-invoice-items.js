@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 $('#issued_at_jalali').persianDatepicker({
                     format: 'YYYY/MM/DD',
                     autoClose: true,
-                    initialValue: !!$('#issued_at_jalali').val(),
+                    initialValue: true,
                     onSelect: function (unix) {
                         let pd = new persianDate(unix).toLocale('en').format('YYYY-MM-DD');
                         $('#issued_at').val(pd);
@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 $('#due_at_jalali').persianDatepicker({
                     format: 'YYYY/MM/DD',
                     autoClose: true,
-                    initialValue: !!$('#due_at_jalali').val(),
+                    initialValue: true,
                     onSelect: function (unix) {
                         let pd = new persianDate(unix).toLocale('en').format('YYYY-MM-DD');
                         $('#due_at').val(pd);
@@ -32,6 +32,14 @@ document.addEventListener("DOMContentLoaded", function () {
     // اجرای تقویم شمسی
     initPersianDatePickers();
 
+        // دکمه باز کردن تقویم
+        document.getElementById('openIssuedDatePicker').addEventListener('click', function () {
+            $('#issued_at_jalali').focus();
+        });
+        document.getElementById('openDueDatePicker').addEventListener('click', function () {
+            $('#due_at_jalali').focus();
+        });
+    
     // --- سایر بخش‌ها ---
     // شماره فاکتور اتوماتیک
     const invoiceNumberInput = document.getElementById('invoice_number');
@@ -101,4 +109,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
+
+
 });

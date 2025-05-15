@@ -1,8 +1,11 @@
 @extends('layouts.app')
 
-@section('content')
+@section('styles')
+<link rel="stylesheet" href="{{ asset('css/persianDatepicker-melon.css') }}">
 <link rel="stylesheet" href="{{ asset('css/sales-invoice.css') }}">
+@endsection
 
+@section('content')
 <div class="sales-invoice-container">
     <div class="sales-invoice-header d-flex align-items-center justify-content-between mb-3">
         <h2 class="mb-0"><i class="fa fa-file-invoice-dollar ms-2"></i> فاکتور فروش</h2>
@@ -34,14 +37,19 @@
             </div>
             <div class="col-md-2">
                 <label>تاریخ</label>
-                <input type="text" class="form-control datepicker" name="issued_at_jalali" id="issued_at_jalali" value="{{ old('issued_at_jalali') ?? '' }}" autocomplete="off">
-                <input type="hidden" name="issued_at" id="issued_at" value="{{ old('issued_at') }}">
-
+                <div class="input-group">
+                    <input type="text" class="form-control datepicker" name="issued_at_jalali" id="issued_at_jalali" value="{{ old('issued_at_jalali') ?? '' }}" autocomplete="off">
+                    <input type="hidden" name="issued_at" id="issued_at" value="{{ old('issued_at') }}">
+                    <button type="button" class="btn btn-outline-secondary" id="openIssuedDatePicker"><i class="fa fa-calendar"></i></button>
+                </div>
             </div>
             <div class="col-md-2">
                 <label>تاریخ سررسید</label>
-                <input type="text" class="form-control datepicker" name="due_at_jalali" id="due_at_jalali" value="{{ old('due_at_jalali') ?? '' }}" autocomplete="off">
-<input type="hidden" name="due_at" id="due_at" value="{{ old('due_at') }}">
+                <div class="input-group">
+                    <input type="text" class="form-control datepicker" name="due_at_jalali" id="due_at_jalali" value="{{ old('due_at_jalali') ?? '' }}" autocomplete="off">
+                    <input type="hidden" name="due_at" id="due_at" value="{{ old('due_at') }}">
+                    <button type="button" class="btn btn-outline-secondary" id="openDueDatePicker"><i class="fa fa-calendar"></i></button>
+                </div>
             </div>
             <div class="col-md-2">
                 <label>پروژه</label>
