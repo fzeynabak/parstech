@@ -21,11 +21,69 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // افزودن محصول یا خدمت
+    // ----------- بارگذاری و رندر لیست محصولات و خدمات با کنترل دکمه و رنگ پس‌زمینه -----------
+    ['product', 'service'].forEach(type => {
+        function renderRows(items) {
+            let html = '';
+            items.forEach(item => {
+                let stock = parseInt(item.stock) || 0;
+                let disabled = stock < 1 ? 'disabled' : '';
+                let hideBtn = stock < 1 ? 'd-none' : '';
+                let rowBg = stock < 1 ? 'style="background:#ffe6e6!important;"' : '';
+                let stockText = stock < 1 ? '<span class="badge bg-danger">اتمام موجودی</span>' : stock;
+                html += `<tr ${rowBg}>
+                    <td>
+                        <button class="btn btn-success btn-sm add-product-btn ${hideBtn}" data-id="${item.id}" data-type="${type}" ${disabled}>
+                            <i class="fa fa-plus"></i>
+                        </button>
+                    </td>
+                    <td>${item.code ?? '-'}</td>
+                    <td><img src="${item.image ?? ''}" class="rounded" style="width:40px;height:40px;object-fit:cover"></td>
+                    <td>${item.name ?? '-'}</td>
+                    <td>${stockText}</td>
+                    <td>${item.category ?? '-'}</td>
+                    <td>${item.sell_price ? parseInt(item.sell_price).toLocaleString() : '-'}</td>
+                </tr>`;
+            });
+            return html;
+        }
+
+        function loadList(query = '', reset = true) {
+            let url = type === 'product'
+                ? '/products/ajax-list'
+                : '/services/ajax-list';
+            let params = '?limit=10';
+            if (query) {
+                params += '&q=' + encodeURIComponent(query);
+            }
+            fetch(url + params)
+                .then(r => r.json())
+                .then(data => {
+                    let tbody = document.getElementById(type + '-table-body');
+                    if (tbody) tbody.innerHTML = renderRows(data);
+                });
+        }
+
+        // بارگذاری اولیه
+        loadList();
+
+        // جستجو
+        const searchInput = document.getElementById(type + '-search-input');
+        if(searchInput){
+            searchInput.addEventListener('input', function () {
+                let q = this.value.trim();
+                loadList(q, true);
+            });
+        }
+    });
+
+    // ------------------ افزودن محصول یا خدمت به فاکتور ------------------
     document.body.addEventListener('click', function (e) {
         if (e.target.closest('.add-product-btn')) {
-            e.preventDefault();
             let btn = e.target.closest('.add-product-btn');
+            // اگر دکمه hidden یا disabled بود هیچ کاری نکن
+            if (btn.classList.contains('d-none') || btn.disabled) return;
+            e.preventDefault();
             let id = String(btn.dataset.id).trim();
             let type = String(btn.dataset.type).trim();
 
@@ -33,11 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then(response => response.json())
                 .then(item => {
                     let stock = parseInt(item.stock) || 0;
-                    // اگر موجودی صفر باشد هیچ ردیفی اضافه نشود
-                    if (stock < 1) {
-                        showAlert(`محصول "${item.name}" موجودی ندارد و قابل افزودن نیست!`);
-                        return; // اضافه نشود
-                    }
+                    if (stock < 1) return; // اطمینان نهایی
                     let idx = invoiceItems.findIndex(x => x.id == id && x.type == type);
                     if (idx > -1) {
                         if (invoiceItems[idx].count >= stock) {
@@ -65,7 +119,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // حذف ردیف
+    // ------------------ حذف ردیف از فاکتور ------------------
     document.body.addEventListener('click', function (e) {
         if (e.target.closest('.remove-invoice-item')) {
             e.preventDefault();
@@ -78,9 +132,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // رندر جدول و کنترل شرط‌ها
+    // ------------------ رندر جدول فاکتور و کنترل شرط‌ها ------------------
     function renderInvoiceItemsTable() {
         let tbody = document.getElementById('invoice-items-body');
+        if (!tbody) return;
         tbody.innerHTML = '';
         let total = 0, count = 0;
         invoiceItems.forEach((item, idx) => {
@@ -138,12 +193,15 @@ document.addEventListener("DOMContentLoaded", function () {
             `;
             tbody.appendChild(row);
         });
-        document.getElementById('total_count').textContent = count;
-        document.getElementById('total_amount').textContent = total.toLocaleString() + ' ریال';
-        document.getElementById('invoice-total-amount').textContent = total.toLocaleString() + ' ریال';
+        let totalCountEl = document.getElementById('total_count');
+        let totalAmountEl = document.getElementById('total_amount');
+        let invoiceTotalEl = document.getElementById('invoice-total-amount');
+        if (totalCountEl) totalCountEl.textContent = count;
+        if (totalAmountEl) totalAmountEl.textContent = total.toLocaleString() + ' ریال';
+        if (invoiceTotalEl) invoiceTotalEl.textContent = total.toLocaleString() + ' ریال';
     }
 
-    // کنترل شرط‌ها روی ورودی‌های جدول
+    // ------------------ کنترل شرط‌ها روی ورودی‌های جدول ------------------
     document.body.addEventListener('input', function (e) {
         if (e.target.classList.contains('item-count-input')) {
             let idx = parseInt(e.target.dataset.idx);
@@ -153,7 +211,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 showAlert('تعداد باید حداقل ۱ باشد.');
                 val = 1;
             } else if (val > max) {
-                showAlert(`این محصول "${invoiceItems[idx].name}" فقط ${max} عدد موجودی دارد و بیش از این نمی‌توانید وارد کنید.`);
+                showAlert(`این محصول "${invoiceItems[idx].name}" فقط ${max} عدد موجودی دارد و بیش از این تعداد نمی‌توانید وارد کنید.`);
                 val = max;
             }
             invoiceItems[idx].count = val;
@@ -162,9 +220,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (e.target.classList.contains('item-price-input')) {
             let idx = parseInt(e.target.dataset.idx);
             let val = parseInt(e.target.value) || 0;
-            if (val < 0) {
-                val = 0;
-            }
+            if (val < 0) val = 0;
             invoiceItems[idx].sell_price = val;
             renderInvoiceItemsTable();
         }
@@ -172,20 +228,15 @@ document.addEventListener("DOMContentLoaded", function () {
             let idx = parseInt(e.target.dataset.idx);
             let val = parseInt(e.target.value) || 0;
             let maxDiscount = parseInt(invoiceItems[idx].sell_price) * invoiceItems[idx].count;
-            if (val < 0) {
-                val = 0;
-            } else if (val > maxDiscount) {
-                val = maxDiscount;
-            }
+            if (val < 0) val = 0;
+            else if (val > maxDiscount) val = maxDiscount;
             invoiceItems[idx].discount = val;
             renderInvoiceItemsTable();
         }
         if (e.target.classList.contains('item-tax-input')) {
             let idx = parseInt(e.target.dataset.idx);
             let val = parseInt(e.target.value) || 0;
-            if (val < 0) {
-                val = 0;
-            }
+            if (val < 0) val = 0;
             invoiceItems[idx].tax = val;
             renderInvoiceItemsTable();
         }
@@ -195,5 +246,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // سایر بخش‌ها مثل تقویم، شماره فاکتور و جستجو ـ بدون تغییر و مطابق قبل
+    // ------------------ سایر بخش‌ها مثل تقویم، شماره فاکتور و جستجو ------------------
+    // (کدهای قبلی شما اینجا قرار می‌گیرند، این بخش به شرط‌ها و کنترل محصولات مرتبط نیست)
 });
