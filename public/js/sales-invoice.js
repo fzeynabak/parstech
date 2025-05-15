@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // جستجو
         const searchInput = document.getElementById(type + '-search-input');
-        if(searchInput){
+        if (searchInput) {
             searchInput.addEventListener('input', function () {
                 let q = this.value.trim();
                 loadList(q, true);
@@ -81,7 +81,6 @@ document.addEventListener("DOMContentLoaded", function () {
     document.body.addEventListener('click', function (e) {
         if (e.target.closest('.add-product-btn')) {
             let btn = e.target.closest('.add-product-btn');
-            // اگر دکمه hidden یا disabled بود هیچ کاری نکن
             if (btn.classList.contains('d-none') || btn.disabled) return;
             e.preventDefault();
             let id = String(btn.dataset.id).trim();
@@ -91,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then(response => response.json())
                 .then(item => {
                     let stock = parseInt(item.stock) || 0;
-                    if (stock < 1) return; // اطمینان نهایی
+                    if (stock < 1) return;
                     let idx = invoiceItems.findIndex(x => x.id == id && x.type == type);
                     if (idx > -1) {
                         if (invoiceItems[idx].count >= stock) {
@@ -144,11 +143,18 @@ document.addEventListener("DOMContentLoaded", function () {
     function renderInvoiceItemsTable() {
         let tbody = document.getElementById('invoice-items-body');
         if (!tbody) return;
+
+        // ذخیره فوکوس و مقدار ورودی‌ها (بدون setSelectionRange برای type="number")
+        let focusedElem = document.activeElement;
+        let focusedName = focusedElem ? focusedElem.getAttribute('name') : null;
+        let focusedIdx = focusedElem ? focusedElem.getAttribute('data-idx') : null;
+        let focusedValue = focusedElem ? focusedElem.value : null;
+
         tbody.innerHTML = '';
         let total = 0, count = 0;
         invoiceItems.forEach((item, idx) => {
-            let itemDiscount = parseInt(item.discount) || 0;
-            let itemTax = parseInt(item.tax) || 0;
+            let itemDiscount = parseFloat(item.discount) || 0;
+            let itemTax = parseFloat(item.tax) || 0;
             let itemCount = parseInt(item.count) || 1;
             let itemPrice = parseInt(item.sell_price) || 0;
             let itemStock = parseInt(item.stock) || 1;
@@ -177,7 +183,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 itemTax = 0;
                 invoiceItems[idx].tax = 0;
             }
-            let itemTotal = (itemCount * itemPrice) - itemDiscount + itemTax;
+            let itemTotal = (itemCount * itemPrice) - itemDiscount + ((itemTax / 100) * ((itemCount * itemPrice) - itemDiscount));
             total += itemTotal;
             count += itemCount;
 
@@ -195,12 +201,29 @@ document.addEventListener("DOMContentLoaded", function () {
                     <input type="number" class="form-control input-sm item-count-input" name="counts[]" value="${itemCount}" min="1" max="${itemStock}" data-idx="${idx}">
                 </td>
                 <td><input type="number" class="form-control input-sm item-price-input" name="unit_prices[]" value="${itemPrice}" min="0" step="1" data-idx="${idx}"></td>
-                <td><input type="number" class="form-control input-sm item-discount-input" name="discounts[]" value="${itemDiscount}" min="0" max="${itemCount*itemPrice}" step="1" data-idx="${idx}"></td>
-                <td><input type="number" class="form-control input-sm item-tax-input" name="taxes[]" value="${itemTax}" min="0" step="1" data-idx="${idx}"></td>
+                <td><input type="number" class="form-control input-sm item-discount-input" name="discounts[]" value="${itemDiscount}" min="0" max="${itemCount*itemPrice}" step="0.01" data-idx="${idx}"></td>
+                <td>
+                    <input type="number" class="form-control input-sm item-tax-input" name="taxes[]" value="${itemTax}" min="0" max="100" step="0.01" data-idx="${idx}">
+                    <span class="small">%</span>
+                </td>
                 <td class="item-total">${itemTotal.toLocaleString()} ریال</td>
             `;
             tbody.appendChild(row);
         });
+
+        // بازگرداندن فوکوس و مقدار ورودی قبلی (بدون setSelectionRange برای type="number")
+        if (focusedName && focusedIdx !== null) {
+            let selector = `[name="${focusedName}"][data-idx="${focusedIdx}"]`;
+            let input = tbody.querySelector(selector);
+            if (input) {
+                input.focus();
+                if (focusedValue !== null && input.value !== focusedValue) {
+                    input.value = focusedValue;
+                }
+                // setSelectionRange را برای type="number" اجرا نکن!
+            }
+        }
+
         let totalCountEl = document.getElementById('total_count');
         let totalAmountEl = document.getElementById('total_amount');
         let invoiceTotalEl = document.getElementById('invoice-total-amount');
@@ -234,7 +257,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if (e.target.classList.contains('item-discount-input')) {
             let idx = parseInt(e.target.dataset.idx);
-            let val = parseInt(e.target.value) || 0;
+            let val = parseFloat(e.target.value) || 0;
             let maxDiscount = parseInt(invoiceItems[idx].sell_price) * invoiceItems[idx].count;
             if (val < 0) val = 0;
             else if (val > maxDiscount) val = maxDiscount;
@@ -243,8 +266,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if (e.target.classList.contains('item-tax-input')) {
             let idx = parseInt(e.target.dataset.idx);
-            let val = parseInt(e.target.value) || 0;
+            let val = parseFloat(e.target.value) || 0;
             if (val < 0) val = 0;
+            if (val > 100) val = 100;
             invoiceItems[idx].tax = val;
             renderInvoiceItemsTable();
         }
@@ -254,8 +278,5 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-
-    
-    // ------------------ سایر بخش‌ها مثل تقویم، شماره فاکتور و جستجو ------------------
-    // (کدهای قبلی شما اینجا قرار می‌گیرند، این بخش به شرط‌ها و کنترل محصولات مرتبط نیست)
+    // سایر کدها مثل تقویم و جستجو...
 });

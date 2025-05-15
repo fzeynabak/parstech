@@ -10,8 +10,7 @@
     <div class="sales-invoice-header d-flex align-items-center justify-content-between mb-3">
         <h2 class="mb-0"><i class="fa fa-file-invoice-dollar ms-2"></i> فاکتور فروش</h2>
         <div class="sales-invoice-actions">
-            <button type="button" class="btn btn-light" title="ذخیره پیش‌نویس"><i class="fa fa-save"></i></button>
-            <button type="button" class="btn btn-light" title="ایجاد جدید"><i class="fa fa-plus-square"></i></button>
+            <!-- دکمه‌های غیرثبت حذف شدند -->
         </div>
     </div>
 
@@ -51,20 +50,11 @@
                     <button type="button" class="btn btn-outline-secondary" id="openDueDatePicker"><i class="fa fa-calendar"></i></button>
                 </div>
             </div>
-            <div class="col-md-2">
-                <label>پروژه</label>
-                <select class="form-select" name="project_id" id="project_id">
-                    <option value="">انتخاب کنید...</option>
-                    @isset($projects)
-                        @foreach($projects as $project)
-                            <option value="{{ $project->id }}">{{ $project->name }}</option>
-                        @endforeach
-                    @endisset
-                </select>
-            </div>
+            <!-- پروژه حذف شد -->
             <div class="col-md-2">
                 <label>واحد پول</label>
-                <select class="form-select" name="currency_id" id="currency_id">
+                <select class="form-select" name="currency_id" id="currency_id" required>
+                    <option value="">انتخاب کنید...</option>
                     @foreach($currencies as $currency)
                         <option value="{{ $currency->id }}">{{ $currency->name }} - {{ $currency->code }}</option>
                     @endforeach
@@ -77,7 +67,7 @@
                 <label>مشتری <span class="text-danger">*</span></label>
                 <div class="input-group">
                     <input type="text" class="form-control" id="customer_search" placeholder="انتخاب کنید...">
-                    <input type="hidden" name="customer_id" id="customer_id">
+                    <input type="hidden" name="customer_id" id="customer_id" required>
                     <button type="button" class="btn btn-outline-success" id="addCustomerBtn"><i class="fa fa-plus"></i></button>
                 </div>
                 <div class="dropdown-menu" id="customer-search-results" style="width:100%"></div>
@@ -87,15 +77,14 @@
                 <input type="text" class="form-control" name="title" id="invoice_title" placeholder="عنوان...">
             </div>
             <div class="col-md-3">
-                <label>فروشنده</label>
-                <select class="form-select" name="seller_id" id="seller_id">
+                <label>فروشنده <span class="text-danger">*</span></label>
+                <select class="form-select" name="seller_id" id="seller_id" required>
                     <option value="">انتخاب کنید...</option>
                     @foreach($sellers as $seller)
                         <option value="{{ $seller->id }}">{{ $seller->seller_code }} - {{ $seller->first_name }} {{ $seller->last_name }}</option>
                     @endforeach
                 </select>
             </div>
-            <!-- فیلد مالیات درصدی بالا حذف شد -->
         </div>
 
         <div class="row">
@@ -111,24 +100,12 @@
         </div>
 
         <div class="row align-items-center mt-4">
-            <div class="col-md-6 d-flex gap-2 flex-wrap">
-                <button type="button" class="btn btn-outline-secondary" id="btnAddRow"><i class="fa fa-plus"></i> افزودن ردیف</button>
-                <button type="button" class="btn btn-outline-success" id="btnAddCategory"><i class="fa fa-folder-plus"></i> دسته‌بندی</button>
-                <button type="button" class="btn btn-outline-success" id="btnBarcode"><i class="fa fa-barcode"></i> بارکد</button>
-                <button type="button" class="btn btn-outline-success" id="btnSerial"><i class="fa fa-hashtag"></i> شماره سریال</button>
-                <button type="button" class="btn btn-outline-info" id="btnDiscount"><i class="fa fa-percent"></i> تخفیف</button>
-                <button type="button" class="btn btn-outline-warning" id="btnTax"><i class="fa fa-money-bill"></i> مالیات</button>
-                <button type="button" class="btn btn-outline-primary" id="btnNotes"><i class="fa fa-comment"></i> توضیحات</button>
-                <button type="button" class="btn btn-outline-dark" id="btnShipping"><i class="fa fa-truck"></i> حمل و نقل</button>
-            </div>
-            <div class="col-md-3 text-end">
+            <div class="col-md-9 text-end">
                 <div>تعداد کل: <span id="total_count">۰</span></div>
                 <div>مبلغ کل: <span id="total_amount">۰ ریال</span></div>
             </div>
             <div class="col-md-3 text-end">
                 <button type="submit" class="btn btn-primary btn-lg px-4 shadow-sm"><i class="fa fa-check ms-2"></i> ثبت فاکتور فروش</button>
-                <button type="button" class="btn btn-outline-dark" id="btnExportExcel"><i class="fa fa-file-excel"></i> اکسل</button>
-                <button type="button" class="btn btn-outline-secondary" id="btnOtherActions"><i class="fa fa-ellipsis-h"></i> سایر</button>
             </div>
         </div>
     </form>
@@ -141,4 +118,20 @@
     <script src="{{ asset('js/persian-date.js') }}"></script>
     <script src="{{ asset('js/persian-datepicker.min.js') }}"></script>
     <script src="{{ asset('js/sales-invoice.js') }}"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('sales-invoice-form').addEventListener('submit', function(e) {
+            let errors = [];
+            if(!document.getElementById('customer_id').value) errors.push('مشتری را انتخاب کنید.');
+            if(!document.getElementById('seller_id').value) errors.push('فروشنده را انتخاب کنید.');
+            if(!document.getElementById('currency_id').value) errors.push('واحد پول را انتخاب کنید.');
+            let hasItems = (document.querySelectorAll('#invoice-items-body tr').length > 0);
+            if(!hasItems) errors.push('حداقل یک محصول یا خدمت به فاکتور اضافه کنید.');
+            if(errors.length) {
+                e.preventDefault();
+                Swal.fire({icon:'error', html: errors.join('<br>')});
+            }
+        });
+    });
+    </script>
 @endsection

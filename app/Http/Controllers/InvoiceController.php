@@ -10,9 +10,17 @@ use App\Models\Person;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Morilog\Jalali\Jalalian;
-
+use App\Models\CustomerPurchase;
+CustomerPurchase::create([
+    'customer_id' => $invoice->customer_id,
+    'invoice_id'  => $invoice->id,
+    'total_amount'=> $invoice->final_amount,
+    'purchase_date' => $invoice->date ?? now(),
+]);
 class InvoiceController extends Controller
 {
+
+
 
     public function newForm()
     {
