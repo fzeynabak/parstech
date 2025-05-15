@@ -14,12 +14,8 @@
             position: relative;
             transition: background 0.2s;
         }
-        .form-switch input[type=checkbox] {
-            display: none;
-        }
-        .form-switch input[type=checkbox]:checked + .slider {
-            background: #4caf50;
-        }
+        .form-switch input[type=checkbox] { display: none; }
+        .form-switch input[type=checkbox]:checked + .slider { background: #4caf50; }
         .form-switch .slider:before {
             content: "";
             position: absolute;
@@ -31,9 +27,7 @@
             border-radius: 50%;
             transition: 0.2s;
         }
-        .form-switch input[type=checkbox]:checked + .slider:before {
-            left: 21px;
-        }
+        .form-switch input[type=checkbox]:checked + .slider:before { left: 21px; }
     </style>
 @endsection
 
@@ -148,7 +142,6 @@
 @endsection
 
 @section('scripts')
-    <!-- ترتیب لود بسیار مهم است -->
     <script src="{{ asset('js/jquery.min.js') }}"></script>
     <script src="{{ asset('js/persian-date.min.js') }}"></script>
     <script src="{{ asset('js/persian-datepicker.min.js') }}"></script>
@@ -157,7 +150,7 @@
     <script src="{{ asset('js/sales-invoice.js') }}"></script>
     <script>
     $(function() {
-        // فعال‌سازی انتخابگر تاریخ برای هر دو فیلد
+        // فعال‌سازی انتخابگر تاریخ فقط همینجا!
         $("#issued_at_jalali").persianDatepicker({
             format: "YYYY/MM/DD",
             autoClose: true,
@@ -171,14 +164,12 @@
             theme: 'melon',
         });
 
-        // باز کردن پاپ‌آپ با کلیک روی دکمه کنار هر فیلد
         $('#openIssuedDatePicker').on('click', function(){
             $("#issued_at_jalali").persianDatepicker('show');
         });
         $('#openDueDatePicker').on('click', function(){
             $("#due_at_jalali").persianDatepicker('show');
         });
-        // باز کردن با کلیک یا فوکوس روی خود input
         $('#issued_at_jalali').on('focus click', function(){
             $(this).persianDatepicker('show');
         });
