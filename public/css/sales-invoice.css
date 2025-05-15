@@ -51,3 +51,6 @@
         font-size: 20px;
     }
 }
+div#customer-search-results {
+    width: 310px !important;
+}
