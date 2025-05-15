@@ -104,21 +104,27 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
+
     // بارگذاری محصولات و خدمات (Ajax)
     ['product', 'service'].forEach(type => {
         function renderRows(items) {
             let html = '';
             items.forEach(item => {
-                html += `<tr>
+                let stock = parseInt(item.stock) || 0;
+                let disabled = stock < 1 ? 'disabled' : '';
+                let hideBtn = stock < 1 ? 'd-none' : '';
+                let rowBg = stock < 1 ? 'style="background:#ffe6e6!important;"' : '';
+                let stockText = stock < 1 ? '<span class="badge bg-danger">اتمام موجودی</span>' : stock;
+                html += `<tr ${rowBg}>
                     <td>
-                        <button class="btn btn-success btn-sm add-product-btn" data-id="${item.id}" data-type="${type}">
+                        <button class="btn btn-success btn-sm add-product-btn ${hideBtn}" data-id="${item.id}" data-type="${type}" ${disabled}>
                             <i class="fa fa-plus"></i>
                         </button>
                     </td>
                     <td>${item.code ?? '-'}</td>
                     <td><img src="${item.image ?? ''}" class="rounded" style="width:40px;height:40px;object-fit:cover"></td>
                     <td>${item.name ?? '-'}</td>
-                    <td>${item.stock ?? '-'}</td>
+                    <td>${stockText}</td>
                     <td>${item.category ?? '-'}</td>
                     <td>${item.sell_price ? parseInt(item.sell_price).toLocaleString() : '-'}</td>
                 </tr>`;

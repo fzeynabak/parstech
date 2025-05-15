@@ -80,10 +80,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // ------------------ افزودن محصول یا خدمت به فاکتور ------------------
     document.body.addEventListener('click', function (e) {
         if (e.target.closest('.add-product-btn')) {
-            let btn = e.target.closest('.add-product-btn');
-            // اگر دکمه hidden یا disabled بود هیچ کاری نکن
-            if (btn.classList.contains('d-none') || btn.disabled) return;
             e.preventDefault();
+            let btn = e.target.closest('.add-product-btn');
             let id = String(btn.dataset.id).trim();
             let type = String(btn.dataset.type).trim();
 
@@ -91,7 +89,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then(response => response.json())
                 .then(item => {
                     let stock = parseInt(item.stock) || 0;
-                    if (stock < 1) return; // اطمینان نهایی
+                    if (stock < 1) {
+                        showAlert(`محصول "${item.name}" موجودی ندارد و قابل افزودن نیست!`);
+                        return;
+                    }
                     let idx = invoiceItems.findIndex(x => x.id == id && x.type == type);
                     if (idx > -1) {
                         if (invoiceItems[idx].count >= stock) {
