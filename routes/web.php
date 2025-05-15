@@ -225,11 +225,16 @@ Route::get('/products/ajax-list', [\App\Http\Controllers\ProductController::clas
 Route::get('/services/ajax-list', [\App\Http\Controllers\ServiceController::class, 'ajaxList']);
 
 
-// برای محصولات
-Route::get('/products/ajax-list', [ProductController::class, 'ajaxList']);
-// برای خدمات (اگر نیاز است)
-Route::get('/services/ajax-list', [ServiceController::class, 'ajaxList']);
+
 // برای دسته‌بندی‌ها اگر لازم است
 Route::get('/api/categories', [CategoryController::class, 'apiList']);
+
+
+
+
+Route::get('/products/ajax-list', [ProductController::class, 'ajaxList']);
+Route::get('/services/ajax-list', [ServiceController::class, 'ajaxList']);
+Route::get('/sales/item-info', [ProductController::class, 'itemInfo']); // اگر نوع = product
+Route::get('/sales/item-info', [ServiceController::class, 'itemInfo']); // اگر نوع = service
 
 require __DIR__.'/auth.php';
