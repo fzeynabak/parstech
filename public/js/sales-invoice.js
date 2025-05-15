@@ -1,5 +1,3 @@
-// تمام اسکریپت‌های مربوط به فاکتور فروش (بدون تاریخ سررسید)
-
 let invoiceItems = [];
 
 document.addEventListener("DOMContentLoaded", function () {

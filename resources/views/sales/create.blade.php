@@ -14,12 +14,8 @@
             position: relative;
             transition: background 0.2s;
         }
-        .form-switch input[type=checkbox] {
-            display: none;
-        }
-        .form-switch input[type=checkbox]:checked + .slider {
-            background: #4caf50;
-        }
+        .form-switch input[type=checkbox] { display: none; }
+        .form-switch input[type=checkbox]:checked + .slider { background: #4caf50; }
         .form-switch .slider:before {
             content: "";
             position: absolute;
@@ -31,9 +27,7 @@
             border-radius: 50%;
             transition: 0.2s;
         }
-        .form-switch input[type=checkbox]:checked + .slider:before {
-            left: 21px;
-        }
+        .form-switch input[type=checkbox]:checked + .slider:before { left: 21px; }
     </style>
 @endsection
 
@@ -74,7 +68,6 @@
                 <label>تاریخ صدور</label>
                 <div class="input-group">
                     <input type="text" class="form-control" name="issued_at_jalali" id="issued_at_jalali" value="" readonly autocomplete="off">
-                    <input type="hidden" name="issued_at" id="issued_at" value="">
                 </div>
             </div>
             <div class="col-md-2">
@@ -148,26 +141,17 @@
     <script src="{{ asset('js/sales-invoice.js') }}"></script>
     <script>
     $(function() {
-        // تاریخ روز جاری شمسی و میلادی را ست کن و غیرقابل ویرایش کن
+        // مقداردهی خودکار تاریخ صدور به امروز شمسی و غیرقابل ویرایش
         if (typeof persianDate !== "undefined") {
             var now = new persianDate();
-            var jalali = now.format('YYYY/MM/DD HH:mm');
-            // میلادی برای ذخیره در دیتابیس
-            var miladi = now.toLocale('en').format('YYYY-MM-DD HH:mm:ss');
-
+            var jalali = now.format('YYYY/MM/DD');
             $('#issued_at_jalali').val(jalali);
-            $('#issued_at').val(miladi);
         } else {
-            // اگر persianDate نبود، از تاریخ میلادی سیستم استفاده کن
             var date = new Date();
             var pad = n => n < 10 ? '0'+n : n;
-            var miladi = date.getFullYear() + '-' + pad(date.getMonth()+1) + '-' + pad(date.getDate()) + ' ' +
-                pad(date.getHours()) + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds());
+            var miladi = date.getFullYear() + '-' + pad(date.getMonth()+1) + '-' + pad(date.getDate());
             $('#issued_at_jalali').val(miladi);
-            $('#issued_at').val(miladi);
         }
-
-        // تاریخ به صورت readonly باشد و کاربر نتواند تغییر دهد
         $('#issued_at_jalali').prop('readonly', true).css('background', '#eee').css('cursor', 'not-allowed');
     });
     </script>
