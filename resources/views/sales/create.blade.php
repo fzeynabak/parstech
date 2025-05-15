@@ -3,6 +3,37 @@
 @section('styles')
     <link rel="stylesheet" href="{{ asset('css/persianDatepicker-melon.css') }}">
     <link rel="stylesheet" href="{{ asset('css/sales-invoice.css') }}">
+    <style>
+        .form-switch .slider {
+            display: inline-block;
+            width: 38px;
+            height: 20px;
+            background: #eee;
+            border-radius: 20px;
+            position: relative;
+            transition: background 0.2s;
+        }
+        .form-switch input[type=checkbox] {
+            display: none;
+        }
+        .form-switch input[type=checkbox]:checked + .slider {
+            background: #4caf50;
+        }
+        .form-switch .slider:before {
+            content: "";
+            position: absolute;
+            left: 3px;
+            top: 3px;
+            width: 14px;
+            height: 14px;
+            background: #fff;
+            border-radius: 50%;
+            transition: 0.2s;
+        }
+        .form-switch input[type=checkbox]:checked + .slider:before {
+            left: 21px;
+        }
+    </style>
 @endsection
 
 @section('content')
@@ -26,6 +57,12 @@
                 <label>شماره</label>
                 <div class="input-group">
                     <input type="text" class="form-control" name="invoice_number" id="invoice_number" value="{{ old('invoice_number', $nextNumber ?? '') }}" readonly required>
+                    <span class="input-group-text bg-white border-0">
+                        <label class="form-switch m-0" style="cursor:pointer;">
+                            <input type="checkbox" id="invoiceNumberSwitch" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </span>
                 </div>
             </div>
             <div class="col-md-2">
@@ -118,8 +155,29 @@
     <script src="{{ asset('js/persian-datepicker.min.js') }}"></script>
     <script src="{{ asset('js/sales-invoice.js') }}"></script>
     <script>
-    // ذخیره اقلام به input مخفی
+    // ذخیره اقلام به input مخفی و مدیریت شماره فاکتور دستی/خودکار
+    let isAutoInvoiceNumber = true;
     document.addEventListener('DOMContentLoaded', function() {
+        // سوییچ شماره فاکتور
+        const switchInput = document.getElementById('invoiceNumberSwitch');
+        const invoiceInput = document.getElementById('invoice_number');
+        switchInput.addEventListener('change', function() {
+            if (this.checked) {
+                invoiceInput.setAttribute('readonly', 'readonly');
+                // درخواست شماره جدید از سرور
+                fetch('/sales/next-invoice-number')
+                    .then(response => response.json())
+                    .then(data => {
+                        invoiceInput.value = data.number;
+                    });
+                isAutoInvoiceNumber = true;
+            } else {
+                invoiceInput.removeAttribute('readonly');
+                isAutoInvoiceNumber = false;
+                invoiceInput.focus();
+            }
+        });
+
         document.getElementById('sales-invoice-form').addEventListener('submit', function(e) {
             let errors = [];
             if(!document.getElementById('customer_id').value) errors.push('مشتری را انتخاب کنید.');
@@ -127,6 +185,7 @@
             if(!document.getElementById('currency_id').value) errors.push('واحد پول را انتخاب کنید.');
             let hasItems = (typeof invoiceItems !== 'undefined' && invoiceItems.length > 0);
             if(!hasItems) errors.push('حداقل یک محصول یا خدمت به فاکتور اضافه کنید.');
+            if(!invoiceInput.value) errors.push('شماره فاکتور را وارد کنید.');
             if(errors.length) {
                 e.preventDefault();
                 Swal.fire({icon:'error', html: errors.join('<br>')});
