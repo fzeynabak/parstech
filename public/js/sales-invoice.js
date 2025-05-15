@@ -1,6 +1,12 @@
+// ----------------- شروع اسکریپت تجمیع‌شده -----------------
+
+// متغیر سراسری برای اقلام فاکتور
 let invoiceItems = [];
 
+// اجرای همه اسکریپت‌ها فقط بعد از بارگذاری کامل صفحه
 document.addEventListener("DOMContentLoaded", function () {
+
+    // ----------------- مدیریت نمایش پیام (SweetAlert) -----------------
     function showAlert(message, icon = 'error') {
         if (typeof Swal !== 'undefined') {
             Swal.fire({
@@ -20,7 +26,127 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // بارگذاری و رندر لیست محصولات و خدمات
+    // ----------------- فعال‌سازی تقویم شمسی بر روی ورودی‌های تاریخ -----------------
+    function initPersianDatePickers() {
+        if (typeof $ !== 'undefined' && $.fn.persianDatepicker) {
+            $('#issued_at_jalali').persianDatepicker({
+                format: 'YYYY/MM/DD',
+                autoClose: true,
+                initialValue: true,
+                theme: 'melon',
+                onSelect: function (unix) {
+                    let pd = new persianDate(unix).toLocale('en').format('YYYY-MM-DD');
+                    $('#issued_at').val(pd);
+                }
+            });
+
+            $('#due_at_jalali').persianDatepicker({
+                format: 'YYYY/MM/DD',
+                autoClose: true,
+                initialValue: true,
+                theme: 'melon',
+                onSelect: function (unix) {
+                    let pd = new persianDate(unix).toLocale('en').format('YYYY-MM-DD');
+                    $('#due_at').val(pd);
+                }
+            });
+        } else {
+            console.error("persianDatepicker is not loaded or undefined.");
+        }
+    }
+    initPersianDatePickers();
+
+    // باز کردن تقویم با دکمه
+    const openIssuedDatePicker = document.getElementById('openIssuedDatePicker');
+    const openDueDatePicker = document.getElementById('openDueDatePicker');
+    if (openIssuedDatePicker) {
+        openIssuedDatePicker.addEventListener('click', function () {
+            $('#issued_at_jalali').persianDatepicker('show');
+        });
+    }
+    if (openDueDatePicker) {
+        openDueDatePicker.addEventListener('click', function () {
+            $('#due_at_jalali').persianDatepicker('show');
+        });
+    }
+    // باز کردن با کلیک یا فوکوس روی input
+    $('#issued_at_jalali').on('focus click', function(){
+        $(this).persianDatepicker('show');
+    });
+    $('#due_at_jalali').on('focus click', function(){
+        $(this).persianDatepicker('show');
+    });
+
+    // ----------------- مدیریت شماره فاکتور اتوماتیک/دستی -----------------
+    const invoiceNumberInput = document.getElementById('invoice_number');
+    const invoiceNumberSwitch = document.getElementById('invoiceNumberSwitch');
+    if (invoiceNumberInput && invoiceNumberSwitch) {
+        function setInvoiceNumberReadOnly(isAuto) {
+            invoiceNumberInput.readOnly = isAuto;
+            if (isAuto) {
+                fetch('/sales/next-invoice-number')
+                    .then(response => response.json())
+                    .then(data => {
+                        invoiceNumberInput.value = data.number;
+                    })
+                    .catch(() => {
+                        invoiceNumberInput.value = 'invoices-10001';
+                    });
+            } else {
+                invoiceNumberInput.value = '';
+                invoiceNumberInput.focus();
+            }
+        }
+        setInvoiceNumberReadOnly(invoiceNumberSwitch.checked);
+        invoiceNumberSwitch.addEventListener('change', function () {
+            setInvoiceNumberReadOnly(this.checked);
+        });
+    }
+
+    // ----------------- جستجوی مشتری -----------------
+    const customerSearchInput = document.getElementById("customer_search");
+    const customerSearchResults = document.getElementById("customer-search-results");
+    const customerIdInput = document.getElementById("customer_id");
+    if (customerSearchInput && customerSearchResults && customerIdInput) {
+        customerSearchInput.addEventListener("input", function () {
+            const query = customerSearchInput.value.trim();
+            if (query.length === 0) {
+                customerSearchResults.classList.remove("show");
+                customerSearchResults.innerHTML = "";
+                return;
+            }
+            fetch(`/customers/search?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    customerSearchResults.innerHTML = "";
+                    if (data.length > 0) {
+                        data.forEach(customer => {
+                            const item = document.createElement("div");
+                            item.className = "dropdown-item";
+                            item.textContent = customer.name;
+                            item.dataset.id = customer.id;
+                            item.addEventListener("click", function () {
+                                customerSearchInput.value = customer.name;
+                                customerIdInput.value = customer.id;
+                                customerSearchResults.classList.remove("show");
+                            });
+                            customerSearchResults.appendChild(item);
+                        });
+                        customerSearchResults.classList.add("show");
+                    } else {
+                        customerSearchResults.innerHTML = "<div class='dropdown-item text-muted'>موردی یافت نشد.</div>";
+                        customerSearchResults.classList.add("show");
+                    }
+                });
+        });
+        document.addEventListener("click", function (event) {
+            if (!customerSearchResults.contains(event.target) && event.target !== customerSearchInput) {
+                customerSearchResults.classList.remove("show");
+            }
+        });
+    }
+
+    // ----------------- بارگذاری و رندر لیست محصولات و خدمات -----------------
     ['product', 'service'].forEach(type => {
         function renderRows(items) {
             let html = '';
@@ -76,7 +202,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // افزودن محصول یا خدمت به فاکتور
+    // ----------------- افزودن محصول یا خدمت به فاکتور -----------------
     document.body.addEventListener('click', function (e) {
         if (e.target.closest('.add-product-btn')) {
             let btn = e.target.closest('.add-product-btn');
@@ -125,7 +251,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // حذف ردیف از فاکتور
+    // ----------------- حذف ردیف از فاکتور -----------------
     document.body.addEventListener('click', function (e) {
         if (e.target.closest('.remove-invoice-item')) {
             e.preventDefault();
@@ -138,7 +264,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // رندر جدول فاکتور و کنترل شرط‌ها
+    // ----------------- رندر جدول فاکتور و کنترل شرط‌ها -----------------
     function renderInvoiceItemsTable() {
         let tbody = document.getElementById('invoice-items-body');
         if (!tbody) return;
@@ -212,7 +338,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (invoiceTotalEl) invoiceTotalEl.textContent = total.toLocaleString() + ' ریال';
     }
 
-    // کنترل شرط‌ها روی ورودی‌های جدول
+    // ----------------- کنترل شرط‌ها روی ورودی‌های جدول -----------------
     document.body.addEventListener('input', function (e) {
         if (e.target.classList.contains('item-count-input')) {
             let idx = parseInt(e.target.dataset.idx);
@@ -258,15 +384,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // برای ذخیره اقلام در input مخفی هنگام ثبت فرم
+    // ----------------- ذخیره اقلام به input مخفی هنگام ثبت فرم -----------------
     let salesForm = document.getElementById('sales-invoice-form');
     if (salesForm) {
         salesForm.addEventListener('submit', function(e) {
-            // مقدار invoiceItems را به input مخفی منتقل کن
             let productsInput = document.getElementById('products_input');
             if(productsInput) {
                 productsInput.value = JSON.stringify(invoiceItems);
             }
         });
     }
+
 });
+// ----------------- پایان اسکریپت تجمیع‌شده -----------------

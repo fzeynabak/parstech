@@ -146,7 +146,6 @@
     <script src="{{ asset('js/persian-date.min.js') }}"></script>
     <script src="{{ asset('js/persian-datepicker.min.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="{{ asset('js/sales-invoice-items.js') }}"></script>
     <script src="{{ asset('js/sales-invoice.js') }}"></script>
     <script>
     $(function() {
