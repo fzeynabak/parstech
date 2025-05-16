@@ -284,7 +284,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // کنترل شرط‌ها روی ورودی‌های جدول
     document.body.addEventListener('input', function (e) {
-        if (e.target.classList.contains('item-count-input')) {
+        // ذخیره فوکوس و موقعیت کرسر
+        let active = document.activeElement;
+        let cursorPos = active && typeof active.selectionStart === 'number' ? active.selectionStart : null;
+        let classList = e.target.classList;
+
+        if (classList.contains('item-count-input')) {
             let idx = parseInt(e.target.dataset.idx);
             let val = parseInt(e.target.value);
             let max = parseInt(invoiceItems[idx].stock || 1);
@@ -298,14 +303,14 @@ document.addEventListener("DOMContentLoaded", function () {
             invoiceItems[idx].count = val;
             renderInvoiceItemsTable();
         }
-        if (e.target.classList.contains('item-price-input')) {
+        if (classList.contains('item-price-input')) {
             let idx = parseInt(e.target.dataset.idx);
             let val = parseInt(e.target.value) || 0;
             if (val < 0) val = 0;
             invoiceItems[idx].sell_price = val;
             renderInvoiceItemsTable();
         }
-        if (e.target.classList.contains('item-discount-input')) {
+        if (classList.contains('item-discount-input')) {
             let idx = parseInt(e.target.dataset.idx);
             let val = parseFloat(e.target.value) || 0;
             let maxDiscount = parseInt(invoiceItems[idx].sell_price) * invoiceItems[idx].count;
@@ -314,7 +319,7 @@ document.addEventListener("DOMContentLoaded", function () {
             invoiceItems[idx].discount = val;
             renderInvoiceItemsTable();
         }
-        if (e.target.classList.contains('item-tax-input')) {
+        if (classList.contains('item-tax-input')) {
             let idx = parseInt(e.target.dataset.idx);
             let val = parseFloat(e.target.value) || 0;
             if (val < 0) val = 0;
@@ -322,9 +327,18 @@ document.addEventListener("DOMContentLoaded", function () {
             invoiceItems[idx].tax = val;
             renderInvoiceItemsTable();
         }
-        if (e.target.classList.contains('item-desc-input')) {
+        if (classList.contains('item-desc-input')) {
             let idx = parseInt(e.target.dataset.idx);
             invoiceItems[idx].desc = e.target.value;
+        }
+
+        // پس از رندر، اگر input فعال بود، فوکوس و موقعیت کرسر را بازگردان
+        if (active && active.name && cursorPos !== null) {
+            let newInput = document.querySelector(`[name="${active.name}"][data-idx="${active.dataset.idx}"]`);
+            if (newInput) {
+                newInput.focus();
+                newInput.setSelectionRange(cursorPos, cursorPos);
+            }
         }
     });
 
