@@ -1,237 +1,255 @@
-/**
- * تبدیل اعداد انگلیسی به فارسی و فرمت‌بندی مبالغ
- */
-class PersianFormatter {
-    static digits = {
-        0: '۰', 1: '۱', 2: '۲', 3: '۳', 4: '۴',
-        5: '۵', 6: '۶', 7: '۷', 8: '۸', 9: '۹'
-    };
+// مدیریت فاکتور
+const InvoiceManager = {
+    // تنظیمات اولیه
+    init() {
+        this.initializeEventListeners();
+        this.initializeFarsiNumbers();
+        this.initializeMoneyFormat();
+        this.initializeDateTimeFormat();
+        this.initializeStatusForm();
+    },
 
-    static toPersianDigits(input) {
-        return String(input).replace(/\d/g, d => this.digits[d]);
-    }
+    // رویدادها
+    initializeEventListeners() {
+        // دکمه چاپ
+        document.querySelector('.btn-print')?.addEventListener('click', () => this.printInvoice());
 
-    static formatMoney(amount) {
-        return this.toPersianDigits(
-            new Intl.NumberFormat('fa-IR').format(amount)
-        );
-    }
-
-    static formatDate(date) {
-        return this.toPersianDigits(
-            new Intl.DateTimeFormat('fa-IR').format(new Date(date))
-        );
-    }
-
-    static formatDateTime(datetime) {
-        const date = new Date(datetime);
-        const persianDate = this.toPersianDigits(
-            new Intl.DateTimeFormat('fa-IR').format(date)
-        );
-        const time = this.toPersianDigits(
-            date.toLocaleTimeString('fa-IR', {
-                hour: '2-digit',
-                minute: '2-digit'
-            })
-        );
-        return `${persianDate} ${time}`;
-    }
-}
-
-/**
- * مدیریت انیمیشن‌ها و افکت‌های بصری
- */
-class UIAnimator {
-    static initialize() {
-        this.initializeAnimations();
-        this.initializeTooltips();
-    }
-
-    static initializeAnimations() {
-        document.querySelectorAll('.animate-fade-in').forEach(element => {
-            element.style.opacity = '0';
-            element.style.transform = 'translateY(10px)';
-
-            setTimeout(() => {
-                element.style.opacity = '1';
-                element.style.transform = 'translateY(0)';
-            }, 100);
-        });
-    }
-
-    static initializeTooltips() {
-        const tooltipTriggerList = [].slice.call(
-            document.querySelectorAll('[data-bs-toggle="tooltip"]')
-        );
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-    }
-}
-
-/**
- * مدیریت عملیات‌های فاکتور
- */
-class InvoiceManager {
-    static initialize() {
-        this.initializePrintButton();
-        this.initializeStatusUpdater();
-        this.initializeDeleteConfirmation();
-        this.convertAllNumbers();
-    }
-
-    static initializePrintButton() {
-        const printButton = document.querySelector('.btn-print');
-        if (printButton) {
-            printButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.printInvoice();
-            });
-        }
-    }
-
-    static initializeStatusUpdater() {
+        // فرم تغییر وضعیت
         const statusForm = document.getElementById('statusUpdateForm');
         if (statusForm) {
-            statusForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.updateStatus(statusForm);
-            });
-        }
-    }
+            const statusSelect = statusForm.querySelector('select[name="status"]');
+            statusSelect?.addEventListener('change', (e) => this.handleStatusChange(e.target.value));
 
-    static initializeDeleteConfirmation() {
-        const deleteButton = document.querySelector('.btn-delete');
-        if (deleteButton) {
-            deleteButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.confirmDelete(deleteButton.dataset.id);
-            });
+            statusForm.addEventListener('submit', (e) => this.handleStatusSubmit(e));
         }
-    }
+    },
 
-    static convertAllNumbers() {
+    // تبدیل اعداد به فارسی
+    initializeFarsiNumbers() {
+        const farsiDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+
         document.querySelectorAll('.farsi-number').forEach(element => {
-            if (element.dataset.type === 'money') {
-                element.textContent = PersianFormatter.formatMoney(
-                    element.textContent.replace(/[^\d.-]/g, '')
-                );
-            } else if (element.dataset.type === 'date') {
-                element.textContent = PersianFormatter.formatDate(element.textContent);
-            } else if (element.dataset.type === 'datetime') {
-                element.textContent = PersianFormatter.formatDateTime(element.textContent);
-            } else {
-                element.textContent = PersianFormatter.toPersianDigits(element.textContent);
+            if (element.dataset.type === 'money') return;
+            if (element.dataset.type === 'datetime') return;
+
+            const text = element.textContent;
+            element.textContent = text.replace(/\d/g, d => farsiDigits[d]);
+        });
+    },
+
+    // فرمت‌بندی مبالغ
+    initializeMoneyFormat() {
+        document.querySelectorAll('[data-type="money"]').forEach(element => {
+            const amount = parseInt(element.textContent.replace(/[^\d]/g, ''));
+            if (isNaN(amount)) return;
+
+            const formattedAmount = new Intl.NumberFormat('fa-IR').format(amount);
+            element.textContent = formattedAmount;
+        });
+    },
+
+    // فرمت‌بندی تاریخ و زمان
+    initializeDateTimeFormat() {
+        document.querySelectorAll('[data-type="datetime"]').forEach(element => {
+            const timestamp = element.textContent;
+            try {
+                const date = new Date(timestamp);
+                const options = {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                };
+                const dateTimeFormat = new Intl.DateTimeFormat('fa-IR', options);
+                element.textContent = dateTimeFormat.format(date);
+            } catch (error) {
+                console.error('Error formatting date:', error);
             }
         });
-    }
+    },
 
-    static printInvoice() {
+    // مدیریت فرم تغییر وضعیت
+    initializeStatusForm() {
+        const statusSelect = document.querySelector('select[name="status"]');
+        if (statusSelect) {
+            this.handleStatusChange(statusSelect.value);
+        }
+    },
+
+    // مدیریت تغییر وضعیت
+    handleStatusChange(status) {
+        const paymentFields = document.getElementById('paymentMethodFields');
+        const cancellationField = document.getElementById('cancellationReasonField');
+
+        if (paymentFields) {
+            paymentFields.classList.toggle('d-none', status !== 'paid');
+
+            const paymentInputs = paymentFields.querySelectorAll('input, select');
+            paymentInputs.forEach(input => {
+                input.required = status === 'paid';
+            });
+        }
+
+        if (cancellationField) {
+            cancellationField.classList.toggle('d-none', status !== 'cancelled');
+            const reasonTextarea = cancellationField.querySelector('textarea');
+            if (reasonTextarea) {
+                reasonTextarea.required = status === 'cancelled';
+            }
+        }
+    },
+
+    // ارسال فرم تغییر وضعیت
+    handleStatusSubmit(event) {
+        const form = event.target;
+        const status = form.querySelector('select[name="status"]').value;
+
+        if (status === 'paid') {
+            const paymentMethod = form.querySelector('select[name="payment_method"]').value;
+            const paymentReference = form.querySelector('input[name="payment_reference"]').value;
+
+            if (!paymentMethod) {
+                event.preventDefault();
+                alert('لطفاً روش پرداخت را انتخاب کنید');
+                return;
+            }
+
+            if (!paymentReference) {
+                event.preventDefault();
+                alert('لطفاً شماره مرجع پرداخت را وارد کنید');
+                return;
+            }
+        }
+
+        if (status === 'cancelled') {
+            const reason = form.querySelector('textarea[name="cancellation_reason"]').value;
+            if (!reason) {
+                event.preventDefault();
+                alert('لطفاً دلیل لغو را وارد کنید');
+                return;
+            }
+        }
+    },
+
+    // چاپ فاکتور
+    printInvoice() {
+        // قبل از چاپ
+        const originalTitle = document.title;
+        document.title = `فاکتور شماره ${this.getInvoiceNumber()}`;
+
+        // چاپ
         window.print();
+
+        // بعد از چاپ
+        document.title = originalTitle;
+    },
+
+    // دریافت شماره فاکتور
+    getInvoiceNumber() {
+        const invoiceNumberElement = document.querySelector('.invoice-meta-item strong');
+        return invoiceNumberElement ? invoiceNumberElement.textContent.trim() : '';
     }
+};
 
-    static async updateStatus(form) {
-        try {
-            const formData = new FormData(form);
-            const response = await fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                }
-            });
-
-            if (response.ok) {
-                location.reload();
-            } else {
-                throw new Error('خطا در به‌روزرسانی وضعیت');
-            }
-        } catch (error) {
-            alert(error.message);
-        }
-    }
-
-    static confirmDelete(id) {
-        if (confirm('آیا از حذف این فاکتور اطمینان دارید؟')) {
-            this.deleteInvoice(id);
-        }
-    }
-
-    static async deleteInvoice(id) {
-        try {
-            const response = await fetch(`/sales/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                }
-            });
-
-            if (response.ok) {
-                window.location.href = '/sales';
-            } else {
-                throw new Error('خطا در حذف فاکتور');
-            }
-        } catch (error) {
-            alert(error.message);
-        }
-    }
-}
-
-/**
- * تنظیمات چاپ
- */
-class PrintManager {
-    static initialize() {
-        this.setupPrintStyles();
-        this.handlePrintEvents();
-    }
-
-    static setupPrintStyles() {
-        const style = document.createElement('style');
-        style.media = 'print';
-        style.textContent = `
-            @page {
-                size: A4;
-                margin: 1cm;
-            }
-            @media print {
-                body * {
-                    visibility: hidden;
-                }
-                .sales-show-container,
-                .sales-show-container * {
-                    visibility: visible;
-                }
-                .sales-show-container {
-                    position: absolute;
-                    left: 0;
-                    top: 0;
-                    width: 100%;
-                }
-                .no-print {
-                    display: none !important;
-                }
-            }
-        `;
-        document.head.appendChild(style);
-    }
-
-    static handlePrintEvents() {
-        window.addEventListener('beforeprint', () => {
-            document.body.classList.add('printing');
-        });
-
-        window.addEventListener('afterprint', () => {
-            document.body.classList.remove('printing');
-        });
-    }
-}
-
-/**
- * راه‌اندازی اولیه
- */
+// اجرای اسکریپت‌ها بعد از لود صفحه
 document.addEventListener('DOMContentLoaded', () => {
-    UIAnimator.initialize();
-    InvoiceManager.initialize();
-    PrintManager.initialize();
+    InvoiceManager.init();
 });
+
+// نمایش پیام‌های خطا
+window.addEventListener('error', (event) => {
+    console.error('Error:', event.error);
+    alert('خطایی رخ داد. لطفاً صفحه را رفرش کنید.');
+});
+
+// مدیریت فرم‌ها
+document.addEventListener('submit', (event) => {
+    const form = event.target;
+    const submitButton = form.querySelector('button[type="submit"]');
+
+    if (submitButton) {
+        // غیرفعال کردن دکمه برای جلوگیری از ارسال چندباره
+        submitButton.disabled = true;
+
+        // نمایش لودینگ
+        const originalText = submitButton.innerHTML;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال پردازش...';
+
+        // فعال‌سازی مجدد دکمه بعد از ارسال
+        setTimeout(() => {
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalText;
+        }, 3000);
+    }
+});
+
+// مدیریت المان‌های دینامیک
+const DynamicUI = {
+    // نمایش/مخفی کردن المان
+    toggle(elementId, show) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.classList.toggle('d-none', !show);
+        }
+    },
+
+    // اضافه کردن کلاس با انیمیشن
+    addClass(element, className) {
+        if (element && !element.classList.contains(className)) {
+            element.classList.add(className);
+        }
+    },
+
+    // حذف کلاس با انیمیشن
+    removeClass(element, className) {
+        if (element && element.classList.contains(className)) {
+            element.classList.remove(className);
+        }
+    }
+};
+
+// مدیریت انیمیشن‌ها
+const AnimationManager = {
+    // تنظیم تأخیر برای انیمیشن‌های ورودی
+    init() {
+        const elements = document.querySelectorAll('.animate-fade-in');
+        elements.forEach((element, index) => {
+            element.style.animationDelay = `${index * 0.1}s`;
+        });
+    }
+};
+
+// اجرای انیمیشن‌ها
+document.addEventListener('DOMContentLoaded', () => {
+    AnimationManager.init();
+});
+
+// مدیریت اعداد فارسی
+const FarsiNumber = {
+    // تبدیل عدد به فارسی
+    convert(number) {
+        const farsiDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+        return number.toString().replace(/\d/g, d => farsiDigits[d]);
+    },
+
+    // تبدیل تاریخ به فارسی
+    convertDate(date) {
+        try {
+            return new Intl.DateTimeFormat('fa-IR').format(new Date(date));
+        } catch (error) {
+            console.error('Error converting date:', error);
+            return date;
+        }
+    },
+
+    // تبدیل مبلغ به فارسی با جداکننده
+    convertMoney(amount) {
+        try {
+            return new Intl.NumberFormat('fa-IR').format(amount);
+        } catch (error) {
+            console.error('Error converting amount:', error);
+            return amount;
+        }
+    }
+};

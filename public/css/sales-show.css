@@ -1,322 +1,27 @@
-/* متغیرهای رنگ */
+/* تنظیمات کلی */
 :root {
     --primary-color: #2563eb;
     --secondary-color: #475569;
-    --success-color: #16a34a;
-    --danger-color: #dc2626;
-    --warning-color: #d97706;
-    --info-color: #0891b2;
+    --success-color: #22c55e;
+    --danger-color: #ef4444;
+    --warning-color: #f59e0b;
+    --info-color: #3b82f6;
     --light-color: #f1f5f9;
     --dark-color: #1e293b;
     --border-color: #e2e8f0;
-    --shadow-color: rgba(0, 0, 0, 0.1);
-    --hover-color: #f8fafc;
-
-    /* فونت‌ها و اندازه‌ها */
-    --font-family: "IRANSans", "Vazir", tahoma, sans-serif;
-    --font-size-xs: 0.75rem;
-    --font-size-sm: 0.875rem;
-    --font-size-base: 1rem;
-    --font-size-lg: 1.125rem;
-    --font-size-xl: 1.25rem;
-    --font-size-2xl: 1.5rem;
-
-    /* فاصله‌ها */
-    --spacing-xs: 0.25rem;
-    --spacing-sm: 0.5rem;
-    --spacing-md: 1rem;
-    --spacing-lg: 1.5rem;
-    --spacing-xl: 2rem;
-
-    /* سایه‌ها */
-    --shadow-sm: 0 1px 2px 0 var(--shadow-color);
-    --shadow-md: 0 4px 6px -1px var(--shadow-color);
-    --shadow-lg: 0 10px 15px -3px var(--shadow-color);
-
-    /* گردی گوشه‌ها */
-    --radius-sm: 0.25rem;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --radius-sm: 0.375rem;
     --radius-md: 0.5rem;
-    --radius-lg: 1rem;
-    --radius-full: 9999px;
-}
-
-/* تنظیمات پایه */
-body {
-    font-family: var(--font-family);
-    font-size: var(--font-size-base);
-    line-height: 1.6;
-    color: var(--dark-color);
-    background-color: var(--light-color);
-    margin: 0;
-    padding: 0;
-}
-
-/* کانتینر اصلی */
-.sales-show-container {
-    max-width: 1280px;
-    margin: var(--spacing-xl) auto;
-    padding: var(--spacing-xl);
-    background-color: #fff;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-}
-
-/* هدر فاکتور */
-.invoice-header {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--spacing-lg);
-    padding-bottom: var(--spacing-lg);
-    border-bottom: 2px solid var(--border-color);
-    margin-bottom: var(--spacing-xl);
-}
-
-.invoice-header-content {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-}
-
-.invoice-title {
-    font-size: var(--font-size-2xl);
-    font-weight: 700;
-    color: var(--primary-color);
-    margin: 0;
-}
-
-.invoice-meta {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-}
-
-.invoice-meta-item {
-    display: flex;
-    gap: var(--spacing-sm);
-    align-items: center;
-    font-size: var(--font-size-sm);
-    color: var(--secondary-color);
-}
-
-/* اطلاعات مشتری و فروشنده */
-.invoice-parties {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: var(--spacing-lg);
-    margin-bottom: var(--spacing-xl);
-}
-
-.party-card {
-    background-color: var(--light-color);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-lg);
-    box-shadow: var(--shadow-sm);
-}
-
-.party-title {
-    font-size: var(--font-size-lg);
-    font-weight: 600;
-    color: var(--primary-color);
-    margin-bottom: var(--spacing-md);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-}
-
-.party-info {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-}
-
-.info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--spacing-xs) 0;
-}
-
-.info-label {
-    color: var(--secondary-color);
-    font-size: var(--font-size-sm);
-}
-
-.info-value {
-    font-weight: 500;
-}
-
-/* جدول اقلام */
-.invoice-items {
-    margin-bottom: var(--spacing-xl);
-    overflow-x: auto;
-}
-
-.items-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    margin-bottom: var(--spacing-lg);
-}
-
-.items-table th {
-    background-color: var(--light-color);
-    color: var(--secondary-color);
-    font-weight: 600;
-    text-align: right;
-    padding: var(--spacing-md);
-    border-bottom: 2px solid var(--border-color);
-}
-
-.items-table td {
-    padding: var(--spacing-md);
-    border-bottom: 1px solid var(--border-color);
-    vertical-align: middle;
-}
-
-.items-table tr:hover td {
-    background-color: var(--hover-color);
-}
-
-/* خلاصه مالی */
-.invoice-summary {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--spacing-lg);
-    margin-bottom: var(--spacing-xl);
-}
-
-.summary-card {
-    background-color: var(--light-color);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-lg);
-    box-shadow: var(--shadow-sm);
-}
-
-.summary-title {
-    font-size: var(--font-size-lg);
-    font-weight: 600;
-    color: var(--primary-color);
-    margin-bottom: var(--spacing-md);
-}
-
-.summary-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-}
-
-.summary-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--spacing-xs) 0;
-}
-
-.summary-label {
-    color: var(--secondary-color);
-}
-
-.summary-value {
-    font-weight: 500;
-}
-
-.summary-total {
-    margin-top: var(--spacing-md);
-    padding-top: var(--spacing-md);
-    border-top: 2px solid var(--border-color);
-    font-size: var(--font-size-lg);
-    font-weight: 700;
-    color: var(--primary-color);
-}
-
-/* وضعیت‌ها */
-.status-badge {
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-radius: var(--radius-full);
-    font-size: var(--font-size-sm);
-    font-weight: 500;
-    text-align: center;
-}
-
-.status-pending {
-    background-color: #fef3c7;
-    color: #92400e;
-}
-
-.status-paid {
-    background-color: #dcfce7;
-    color: #166534;
-}
-
-.status-cancelled {
-    background-color: #fee2e2;
-    color: #991b1b;
-}
-
-/* دکمه‌ها */
-.btn {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-sm) var(--spacing-md);
-    border-radius: var(--radius-md);
-    font-size: var(--font-size-sm);
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-decoration: none;
-}
-
-.btn-primary {
-    background-color: var(--primary-color);
-    color: #fff;
-    border: none;
-}
-
-.btn-primary:hover {
-    background-color: #1d4ed8;
-}
-
-.btn-secondary {
-    background-color: #fff;
-    color: var(--secondary-color);
-    border: 1px solid var(--border-color);
-}
-
-.btn-secondary:hover {
-    background-color: var(--light-color);
-}
-
-/* تنظیمات واکنش‌گرا */
-@media screen and (max-width: 768px) {
-    .sales-show-container {
-        margin: var(--spacing-md);
-        padding: var(--spacing-md);
-    }
-
-    .invoice-header {
-        grid-template-columns: 1fr;
-    }
-
-    .party-card {
-        padding: var(--spacing-md);
-    }
-
-    .items-table {
-        font-size: var(--font-size-sm);
-    }
-
-    .items-table th,
-    .items-table td {
-        padding: var(--spacing-sm);
-    }
+    --radius-lg: 0.75rem;
+    --transition: all 0.3s ease;
 }
 
 /* انیمیشن‌ها */
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(20px);
     }
     to {
         opacity: 1;
@@ -325,25 +30,475 @@ body {
 }
 
 .animate-fade-in {
-    animation: fadeIn 0.3s ease-out;
+    animation: fadeIn 0.5s ease-out forwards;
+    opacity: 0;
 }
 
-/* کلاس‌های کمکی */
-.text-left { text-align: left; }
-.text-right { text-align: right; }
-.text-center { text-align: center; }
-.mt-0 { margin-top: 0; }
-.mb-0 { margin-bottom: 0; }
-.font-bold { font-weight: 700; }
-.text-sm { font-size: var(--font-size-sm); }
-.text-lg { font-size: var(--font-size-lg); }
-.text-success { color: var(--success-color); }
-.text-danger { color: var(--danger-color); }
-.text-warning { color: var(--warning-color); }
-.text-info { color: var(--info-color); }
+/* کانتینر اصلی */
+.sales-show-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
 
-/* اعداد فارسی */
+/* هدر فاکتور */
+.invoice-header {
+    background: #fff;
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.invoice-title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: var(--dark-color);
+    margin-bottom: 1.5rem;
+}
+
+.invoice-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.invoice-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--secondary-color);
+}
+
+.invoice-meta-item i {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.invoice-meta-item strong {
+    color: var(--dark-color);
+}
+
+.invoice-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* کارت‌های اطلاعات */
+.invoice-parties {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.party-card {
+    background: #fff;
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    box-shadow: var(--shadow-md);
+}
+
+.party-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.party-title i {
+    color: var(--primary-color);
+}
+
+.party-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px dashed var(--border-color);
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: var(--secondary-color);
+    font-weight: 500;
+}
+
+.info-value {
+    color: var(--dark-color);
+}
+
+/* وضعیت‌ها */
+.status-badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-pending {
+    background-color: var(--warning-color);
+    color: #fff;
+}
+
+.status-paid {
+    background-color: var(--success-color);
+    color: #fff;
+}
+
+.status-completed {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.status-cancelled {
+    background-color: var(--danger-color);
+    color: #fff;
+}
+
+/* جدول اقلام */
+.invoice-items {
+    background: #fff;
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 1.5rem;
+}
+
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.items-table th {
+    background: var(--light-color);
+    padding: 1rem;
+    font-weight: 600;
+    color: var(--dark-color);
+    text-align: right;
+}
+
+.items-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+.items-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.product-info strong {
+    color: var(--dark-color);
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+/* خلاصه فاکتور */
+.invoice-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    background: #fff;
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    box-shadow: var(--shadow-md);
+}
+
+.summary-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 1.5rem;
+}
+
+.summary-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px dashed var(--border-color);
+}
+
+.summary-label {
+    color: var(--secondary-color);
+    font-weight: 500;
+}
+
+.summary-value {
+    font-weight: 600;
+}
+
+.summary-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    margin-top: 1rem;
+    border-top: 2px solid var(--primary-color);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--dark-color);
+}
+
+/* یادداشت‌ها */
+.invoice-notes {
+    background: #fff;
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    box-shadow: var(--shadow-md);
+}
+
+.notes-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.notes-title i {
+    color: var(--warning-color);
+}
+
+/* فرم تغییر وضعیت */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--dark-color);
+}
+
+.form-control,
+.form-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--dark-color);
+    transition: var(--transition);
+}
+
+.form-control:focus,
+.form-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* دکمه‌ها */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+}
+
+.btn-primary:hover {
+    background: #1d4ed8;
+}
+
+.btn-secondary {
+    background: var(--secondary-color);
+    color: #fff;
+    border: none;
+}
+
+.btn-secondary:hover {
+    background: #334155;
+}
+
+.btn-warning {
+    background: var(--warning-color);
+    color: #fff;
+    border: none;
+}
+
+.btn-warning:hover {
+    background: #d97706;
+}
+
+/* ریسپانسیو */
+@media (max-width: 1024px) {
+    .sales-show-container {
+        padding: 1rem;
+    }
+
+    .invoice-header {
+        padding: 1.5rem;
+    }
+
+    .invoice-meta {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .invoice-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .invoice-title {
+        font-size: 1.5rem;
+    }
+
+    .party-card,
+    .invoice-items,
+    .summary-card,
+    .invoice-notes {
+        padding: 1.5rem;
+    }
+
+    .items-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .invoice-header {
+        padding: 1rem;
+    }
+
+    .invoice-meta-item {
+        width: 100%;
+    }
+
+    .party-card,
+    .invoice-items,
+    .summary-card,
+    .invoice-notes {
+        padding: 1rem;
+    }
+
+    .info-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .summary-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .summary-total {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}
+
+/* فارسی‌سازی اعداد */
 .farsi-number {
-    font-feature-settings: "tnum";
-    direction: rtl;
+    direction: ltr;
+    text-align: right;
+    unicode-bidi: plaintext;
+}
+
+[data-type="money"]::after {
+    content: ' تومان';
+    font-size: 0.875em;
+    color: var(--secondary-color);
+}
+
+/* انیمیشن چاپ */
+@media print {
+    .sales-show-container {
+        padding: 0;
+    }
+
+    .invoice-header,
+    .party-card,
+    .invoice-items,
+    .summary-card,
+    .invoice-notes {
+        box-shadow: none;
+        border: 1px solid var(--border-color);
+        break-inside: avoid;
+    }
+
+    .invoice-actions,
+    .btn,
+    #statusUpdateForm {
+        display: none !important;
+    }
+
+    .items-table {
+        page-break-inside: auto;
+    }
+
+    .items-table tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+
+    @page {
+        margin: 1cm;
+    }
 }
