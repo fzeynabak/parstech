@@ -16,8 +16,8 @@ class SaleController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Sale::with(['seller', 'customer', 'items.product', 'currency']);
 
+        $query = Sale::query()->with(['customer', 'seller']);
         // اعمال فیلترها
         if ($request->filled('search')) {
             $search = $request->search;
@@ -31,7 +31,7 @@ class SaleController extends Controller
                   });
             });
         }
-
+        
         if ($request->filled('customer')) {
             $query->where('customer_id', $request->customer);
         }

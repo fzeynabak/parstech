@@ -34,6 +34,10 @@ use App\Http\Controllers\Api\ProductApiController;
 use App\Http\Controllers\Api\ServiceApiController;
 
 
+
+Route::get('/sales/{sale}/print', [SaleController::class, 'print'])->name('sales.print');
+
+
 Route::post('sales/bulk-delete', [SaleController::class, 'bulkDelete'])->name('sales.bulk-delete');
 Route::post('sales/{sale}/status', [SaleController::class, 'updateStatus'])->name('sales.update-status');
 Route::post('sales/export', [SaleController::class, 'export'])->name('sales.export');
