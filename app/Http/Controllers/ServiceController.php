@@ -4,9 +4,104 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Service;
+use App\Models\Category;
+use App\Models\Unit;
 
 class ServiceController extends Controller
 {
+    /**
+     * لیست خدمات
+     */
+    public function index()
+    {
+        $services = Service::with('category')->orderBy('id', 'desc')->paginate(20);
+        return view('services.index', compact('services'));
+    }
+
+    /**
+     * نمایش فرم افزودن خدمت جدید
+     */
+    public function create()
+    {
+        $serviceCategories = Category::where('category_type', 'service')->get();
+        $units = Unit::pluck('title')->toArray();
+
+
+        return view('services.create', compact('serviceCategories', 'units'));
+    }
+
+    /**
+     * ثبت خدمت جدید
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name'        => 'required|string|max:255',
+            'code'        => 'required|string|max:255|unique:services,code',
+            'category_id' => 'required|exists:categories,id',
+            'unit'        => 'nullable|string|max:255',
+            'price'       => 'nullable|numeric',
+            'is_active'   => 'nullable|boolean',
+        ]);
+
+        $data = $request->only([
+            'name', 'code', 'category_id', 'unit', 'price', 'is_active'
+        ]);
+        // مقداردهی اولیه وضعیت فعال بودن اگر خالی بود
+        if (!isset($data['is_active'])) $data['is_active'] = true;
+
+        Service::create($data);
+
+        return redirect()->route('services.index')->with('success', 'خدمت با موفقیت ثبت شد.');
+    }
+
+    /**
+     * نمایش فرم ویرایش خدمت
+     */
+    public function edit($id)
+    {
+        $service = Service::findOrFail($id);
+        $categories = Category::where('category_type', 'service')->get();
+        $units = Unit::all();
+        return view('services.edit', compact('service', 'categories', 'units'));
+    }
+
+    /**
+     * ویرایش خدمت
+     */
+    public function update(Request $request, $id)
+    {
+        $service = Service::findOrFail($id);
+
+        $request->validate([
+            'name'        => 'required|string|max:255',
+            'code'        => 'required|string|max:255|unique:services,code,' . $service->id,
+            'category_id' => 'required|exists:categories,id',
+            'unit'        => 'nullable|string|max:255',
+            'price'       => 'nullable|numeric',
+            'is_active'   => 'nullable|boolean',
+        ]);
+
+        $data = $request->only([
+            'name', 'code', 'category_id', 'unit', 'price', 'is_active'
+        ]);
+        if (!isset($data['is_active'])) $data['is_active'] = true;
+
+        $service->update($data);
+
+        return redirect()->route('services.index')->with('success', 'خدمت با موفقیت ویرایش شد.');
+    }
+
+    /**
+     * حذف خدمت
+     */
+    public function destroy($id)
+    {
+        $service = Service::findOrFail($id);
+        $service->delete();
+        return redirect()->route('services.index')->with('success', 'خدمت با موفقیت حذف شد.');
+    }
+
     /**
      * Ajax list for services with category filter and search.
      * Route: /services/ajax-list
@@ -33,9 +128,9 @@ class ServiceController extends Controller
                 'id' => $item->id,
                 'code' => $item->code,
                 'name' => $item->name,
-                'image' => $item->image,
-                'stock' => $item->stock,
-                'sell_price' => $item->sell_price,
+                'image' => $item->image ?? null,
+                'stock' => $item->stock ?? null,
+                'sell_price' => $item->price ?? null,
                 'category' => $item->category->name ?? '-',
                 'category_type' => $item->category->category_type ?? '-',
             ];
@@ -60,9 +155,9 @@ class ServiceController extends Controller
             'id' => $service->id,
             'code' => $service->code,
             'name' => $service->name,
-            'image' => $service->image,
-            'stock' => $service->stock,
-            'sell_price' => $service->sell_price,
+            'image' => $service->image ?? null,
+            'stock' => $service->stock ?? null,
+            'sell_price' => $service->price ?? null,
             'category' => $service->category->name ?? '-',
             'category_type' => $service->category->category_type ?? '-',
             'unit' => $service->unit ?? '-',
