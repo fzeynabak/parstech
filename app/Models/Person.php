@@ -43,9 +43,20 @@ class Person extends Model
         }
         return (11 - $ret) == $parity;
     }
-    
+
     public function invoices()
     {
         return $this->hasMany(\App\Models\Invoice::class, 'customer_id');
+    }
+
+
+    public function sales() {
+        return $this->hasMany(\App\Models\Sale::class, 'customer_id');
+    }
+    public function purchasesTotal() {
+        return $this->sales()->sum('total_price');
+    }
+    public function purchasesCount() {
+        return $this->sales()->count();
     }
 }
