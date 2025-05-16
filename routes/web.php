@@ -33,6 +33,12 @@ use App\Http\Controllers\Api\CategoryApiController;
 use App\Http\Controllers\Api\ProductApiController;
 use App\Http\Controllers\Api\ServiceApiController;
 
+
+
+
+
+
+
 Route::get('/sales/next-invoice-number', [SaleController::class, 'nextInvoiceNumber']);
 Route::get('/sales', [SaleController::class, 'index'])->name('sales.index');
 
@@ -226,6 +232,10 @@ Route::get('persons/next-code', [PersonController::class, 'nextCode'])->name('pe
 
 Route::resource('sales', SaleController::class);
 Route::get('/api/invoices/next-number', [\App\Http\Controllers\SaleController::class, 'nextInvoiceNumber']);
+Route::post('sales/bulk-delete', [SaleController::class, 'bulkDelete'])->name('sales.bulk-delete');
+Route::post('sales/{sale}/status', [SaleController::class, 'updateStatus'])->name('sales.update-status');
+Route::post('sales/export', [SaleController::class, 'export'])->name('sales.export');
+Route::get('sales/next-invoice-number', [SaleController::class, 'nextInvoiceNumber'])->name('sales.next-invoice-number');
 
 // ایجکس محصولات و خدمات
 Route::get('/products/ajax-list', [\App\Http\Controllers\ProductController::class, 'ajaxList']);
