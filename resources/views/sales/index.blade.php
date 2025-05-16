@@ -260,10 +260,14 @@
                         </td>
                         <td>
                             <div class="d-flex flex-column">
-                                <span class="fw-bold">{{ number_format($sale->total_amount) }} تومان</span>
-                                @if($sale->discount > 0)
+                                <span class="fw-bold">{{ number_format($sale->paid_amount) }} تومان</span>
+                                @if($sale->remaining_amount > 0)
+                                    <small class="text-danger">{{ number_format($sale->remaining_amount) }} تومان باقیمانده</small>
+                                @endif
+                                @if($sale->status === 'paid')
                                     <small class="text-success">
-                                        {{ number_format($sale->discount) }} تومان تخفیف
+                                        <i class="fas fa-check-circle"></i>
+                                        پرداخت کامل
                                     </small>
                                 @endif
                             </div>
