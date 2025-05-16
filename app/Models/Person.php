@@ -48,8 +48,6 @@ class Person extends Model
     {
         return $this->hasMany(\App\Models\Invoice::class, 'customer_id');
     }
-
-
     public function sales() {
         return $this->hasMany(\App\Models\Sale::class, 'customer_id');
     }
@@ -59,4 +57,6 @@ class Person extends Model
     public function purchasesCount() {
         return $this->sales()->count();
     }
+
+
 }
