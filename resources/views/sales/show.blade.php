@@ -263,7 +263,7 @@
         @if($sale->status === 'pending')
 <div class="summary-card">
     <h3 class="summary-title">تغییر وضعیت پرداخت</h3>
-    <form id="statusUpdateForm" action="{{ route('sales.update-status', $sale) }}" method="POST">
+    <form id="statusUpdateForm" action="{{ route('sales.update-status', $sale) }}" method="POST" novalidate>
         @csrf
         @method('PATCH')
 

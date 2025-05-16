@@ -39,7 +39,7 @@ Route::get('/sales/{sale}/print', [SaleController::class, 'print'])->name('sales
 
 
 Route::post('sales/bulk-delete', [SaleController::class, 'bulkDelete'])->name('sales.bulk-delete');
-Route::post('sales/{sale}/status', [SaleController::class, 'updateStatus'])->name('sales.update-status');
+Route::match(['post', 'patch'], 'sales/{sale}/status', [SaleController::class, 'updateStatus'])->name('sales.update-status');
 Route::post('sales/export', [SaleController::class, 'export'])->name('sales.export');
 Route::get('sales/next-invoice-number', [SaleController::class, 'nextInvoiceNumber'])->name('sales.next-invoice-number');
 

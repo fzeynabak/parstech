@@ -382,23 +382,139 @@ class SaleController extends Controller
 
     public function updateStatus(Request $request, Sale $sale)
     {
+        // اعتبارسنجی اولیه
         $request->validate([
             'status' => 'required|in:pending,paid,completed,cancelled',
-            'cancellation_reason' => 'required_if:status,cancelled'
+            'payment_method' => 'required_if:status,paid',
+            'payment_reference' => 'required_if:status,paid',
+            'cancellation_reason' => 'required_if:status,cancelled',
+        ], [
+            'status.required' => 'وضعیت جدید باید مشخص شود.',
+            'payment_method.required_if' => 'در صورت پرداخت، روش پرداخت باید مشخص شود.',
+            'payment_reference.required_if' => 'در صورت پرداخت، شماره مرجع باید وارد شود.',
+            'cancellation_reason.required_if' => 'در صورت لغو، دلیل لغو باید وارد شود.',
         ]);
 
-        $sale->status = $request->status;
-        if ($request->status === 'cancelled') {
-            $sale->cancellation_reason = $request->cancellation_reason;
-        } elseif ($request->status === 'paid') {
-            $sale->paid_at = now();
-            $sale->payment_method = $request->payment_method;
-            $sale->payment_reference = $request->payment_reference;
-        }
-        $sale->save();
+        DB::beginTransaction();
+        try {
+            // تنظیم مقادیر پایه
+            $updateData = [
+                'status' => $request->status
+            ];
 
-        return redirect()->route('sales.show', $sale)
-                        ->with('success', 'وضعیت فاکتور با موفقیت به‌روزرسانی شد.');
+            // اگر وضعیت پرداخت شده است
+            if ($request->status === 'paid') {
+                // مقادیر پرداخت نقدی
+                if ($request->has('cash_amount')) {
+                    $updateData['cash_amount'] = $request->cash_amount;
+                    $updateData['cash_reference'] = $request->cash_reference;
+                    $updateData['cash_paid_at'] = now();
+                    $updateData['paid_amount'] = $request->cash_amount;
+                }
+
+                // مقادیر کارت به کارت
+                if ($request->has('card_amount')) {
+                    $updateData['card_amount'] = $request->card_amount;
+                    $updateData['card_reference'] = $request->card_reference;
+                    $updateData['card_number'] = $request->card_number;
+                    $updateData['card_bank'] = $request->card_bank;
+                    $updateData['card_paid_at'] = now();
+                    $updateData['paid_amount'] = $request->card_amount;
+                }
+
+                // مقادیر دستگاه کارتخوان
+                if ($request->has('pos_amount')) {
+                    $updateData['pos_amount'] = $request->pos_amount;
+                    $updateData['pos_reference'] = $request->pos_reference;
+                    $updateData['pos_terminal'] = $request->pos_terminal;
+                    $updateData['pos_paid_at'] = now();
+                    $updateData['paid_amount'] = $request->pos_amount;
+                }
+
+                // مقادیر پرداخت آنلاین
+                if ($request->has('online_amount')) {
+                    $updateData['online_amount'] = $request->online_amount;
+                    $updateData['online_reference'] = $request->online_reference;
+                    $updateData['online_transaction_id'] = $request->online_transaction_id;
+                    $updateData['online_paid_at'] = now();
+                    $updateData['paid_amount'] = $request->online_amount;
+                }
+
+                // مقادیر چک
+                if ($request->has('cheque_amount')) {
+                    $updateData['cheque_amount'] = $request->cheque_amount;
+                    $updateData['cheque_number'] = $request->cheque_number;
+                    $updateData['cheque_bank'] = $request->cheque_bank;
+                    $updateData['cheque_due_date'] = $request->cheque_due_date;
+                    $updateData['cheque_status'] = 'pending';
+                    $updateData['cheque_received_at'] = now();
+                    $updateData['paid_amount'] = $request->cheque_amount;
+                }
+
+                // اگر چند روش پرداخت انتخاب شده
+                if ($request->has('multi_cash_amount') || $request->has('multi_card_amount') || $request->has('multi_cheque_amount')) {
+                    $totalPaid = 0;
+
+                    // پرداخت نقدی
+                    if ($request->has('multi_cash_amount')) {
+                        $updateData['cash_amount'] = $request->multi_cash_amount;
+                        $updateData['cash_reference'] = $request->multi_cash_reference;
+                        $updateData['cash_paid_at'] = now();
+                        $totalPaid += $request->multi_cash_amount;
+                    }
+
+                    // کارت به کارت
+                    if ($request->has('multi_card_amount')) {
+                        $updateData['card_amount'] = $request->multi_card_amount;
+                        $updateData['card_reference'] = $request->multi_card_reference;
+                        $updateData['card_number'] = $request->multi_card_number;
+                        $updateData['card_paid_at'] = now();
+                        $totalPaid += $request->multi_card_amount;
+                    }
+
+                    // چک
+                    if ($request->has('multi_cheque_amount')) {
+                        $updateData['cheque_amount'] = $request->multi_cheque_amount;
+                        $updateData['cheque_number'] = $request->multi_cheque_number;
+                        $updateData['cheque_due_date'] = $request->multi_cheque_due_date;
+                        $updateData['cheque_status'] = 'pending';
+                        $updateData['cheque_received_at'] = now();
+                        $totalPaid += $request->multi_cheque_amount;
+                    }
+
+                    $updateData['paid_amount'] = $totalPaid;
+                }
+
+                $updateData['payment_method'] = $request->payment_method;
+                $updateData['payment_reference'] = $request->payment_reference;
+                $updateData['paid_at'] = now();
+
+                // محاسبه مبلغ باقیمانده
+                $updateData['remaining_amount'] = $sale->total_price - $updateData['paid_amount'];
+            }
+            // اگر وضعیت لغو شده است
+            elseif ($request->status === 'cancelled') {
+                $updateData['cancellation_reason'] = $request->cancellation_reason;
+            }
+
+            // اضافه کردن یادداشت پرداخت
+            if ($request->has('payment_notes')) {
+                $updateData['payment_notes'] = $request->payment_notes;
+            }
+
+            // به‌روزرسانی فاکتور
+            $sale->update($updateData);
+
+            DB::commit();
+
+            return redirect()->route('sales.show', $sale)
+                            ->with('success', 'وضعیت و اطلاعات پرداخت فاکتور با موفقیت به‌روزرسانی شد.');
+        }
+        catch (\Exception $e) {
+            DB::rollback();
+            return back()->withInput()
+                        ->withErrors(['error' => 'خطا در ثبت اطلاعات: ' . $e->getMessage()]);
+        }
     }
 
     public function bulkDelete(Request $request)
