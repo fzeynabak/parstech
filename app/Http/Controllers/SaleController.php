@@ -17,6 +17,12 @@ class SaleController extends Controller
         $sales = Sale::with(['seller', 'customer', 'items.product'])->orderByDesc('id')->paginate(20);
         return view('sales.index', compact('sales'));
     }
+        public function nextInvoiceNumber()
+    {
+        $lastSale = Sale::orderBy('invoice_number', 'desc')->first();
+        $nextNumber = $lastSale ? ($lastSale->invoice_number + 1) : 1;
+        return response()->json(['next_invoice_number' => $nextNumber]);
+    }
 
     public function create()
     {
