@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -7,8 +8,8 @@ class CreateProductsTable extends Migration
 {
     public function up()
     {
-        Schema::create('products', function(Blueprint $table) {
-            $table->id();
+        Schema::create('products', function (Blueprint $table) {
+            $table->bigIncrements('id');
             $table->string('name');
             $table->string('code')->unique()->nullable();
             $table->unsignedBigInteger('category_id');
@@ -24,10 +25,12 @@ class CreateProductsTable extends Migration
             $table->string('barcode')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-            $table->foreign('category_id')->references('id')->on('categories')->cascadeOnDelete();
-            $table->foreign('brand_id')->references('id')->on('brands')->nullOnDelete();
+
+            $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
+            $table->foreign('brand_id')->references('id')->on('brands')->onDelete('set null');
         });
     }
+
     public function down()
     {
         Schema::dropIfExists('products');

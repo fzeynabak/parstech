@@ -9,8 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('persons', function (Blueprint $table) {
-            $table->string('company_name')->nullable()->after('accounting_code');
-        });
+            $table->string('company_name')->nullable()->after('last_name');
+                });
     }
 
     public function down(): void
