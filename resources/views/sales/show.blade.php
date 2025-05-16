@@ -246,50 +246,63 @@
                     <span class="summary-label">مبلغ پرداخت شده:</span>
                     <span class="summary-value text-success farsi-number" data-type="money">{{ $sale->paid_amount }}</span>
                 </div>
-                @if($sale->remaining_amount > 0)
                 <div class="summary-item">
                     <span class="summary-label">مبلغ باقیمانده:</span>
                     <span class="summary-value text-danger farsi-number" data-type="money">{{ $sale->remaining_amount }}</span>
                 </div>
-                @endif
                 <div class="summary-total">
                     <span>مبلغ نهایی:</span>
-                    <span class="farsi-number" data-type="money">{{ $sale->total_price - $sale->discount + $sale->tax }}</span>
+                    <span class="farsi-number" data-type="money">{{ $sale->final_amount }}</span>
                 </div>
             </div>
         </div>
+
 
         <!-- فرم تغییر وضعیت -->
-        @if($sale->status === 'pending')
-<div class="summary-card">
-    <h3 class="summary-title">تغییر وضعیت پرداخت</h3>
-    <form id="statusUpdateForm" action="{{ route('sales.update-status', $sale) }}" method="POST" novalidate>
-        @csrf
-        @method('PATCH')
+        @if($sale->status !== 'paid')
+        <!-- فرم پرداخت (قابلیت ویرایش): -->
+        <div class="summary-card">
+            <h3 class="summary-title">ثبت/ویرایش پرداخت</h3>
+            <form id="statusUpdateForm" action="{{ route('sales.update-status', $sale) }}" method="POST" novalidate>
+                @csrf
+                @method('PATCH')
 
-        <!-- مبلغ کل و باقیمانده -->
-        <div class="invoice-payment-status mb-4">
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="payment-info-box">
-                        <div class="title">مبلغ کل</div>
-                        <div class="amount">{{ number_format($sale->total_amount) }} تومان</div>
+                <div class="form-group mb-3">
+                    <label class="form-label">روش پرداخت</label>
+                    <select name="payment_method" class="form-select" required id="paymentMethodSelect">
+                        <option value="">انتخاب کنید</option>
+                        <option value="cash" {{ old('payment_method', $sale->payment_method) == 'cash' ? 'selected' : '' }}>پرداخت نقدی</option>
+                        <option value="card" {{ old('payment_method', $sale->payment_method) == 'card' ? 'selected' : '' }}>کارت به کارت</option>
+                        <option value="pos" {{ old('payment_method', $sale->payment_method) == 'pos' ? 'selected' : '' }}>دستگاه کارتخوان</option>
+                        <option value="online" {{ old('payment_method', $sale->payment_method) == 'online' ? 'selected' : '' }}>پرداخت آنلاین</option>
+                        <option value="cheque" {{ old('payment_method', $sale->payment_method) == 'cheque' ? 'selected' : '' }}>چک</option>
+                        <option value="multi" {{ old('payment_method', $sale->payment_method) == 'multi' ? 'selected' : '' }}>چند روش پرداخت</option>
+                    </select>
+                </div>
+
+                <!-- مبلغ کل و باقیمانده -->
+                <div class="invoice-payment-status mb-4">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="payment-info-box">
+                                <div class="title">مبلغ کل</div>
+                                <div class="amount">{{ number_format($sale->total_amount) }} تومان</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="payment-info-box">
+                                <div class="title">پرداخت شده</div>
+                                <div class="amount text-success">{{ number_format($sale->paid_amount) }} تومان</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="payment-info-box">
+                                <div class="title">مانده حساب</div>
+                                <div class="amount text-danger">{{ number_format($sale->remaining_amount) }} تومان</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="payment-info-box">
-                        <div class="title">پرداخت شده</div>
-                        <div class="amount text-success">{{ number_format($sale->paid_amount) }} تومان</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="payment-info-box">
-                        <div class="title">مانده حساب</div>
-                        <div class="amount text-danger">{{ number_format($sale->remaining_amount) }} تومان</div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- انتخاب روش پرداخت -->
         <div class="form-group mb-3">
