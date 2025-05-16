@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -20,10 +21,11 @@ return new class extends Migration
             }
         });
 
-        // به‌روزرسانی رکوردهای موجود
+        // به‌روزرسانی مقادیر برای رکوردهای موجود
         DB::statement('UPDATE sales SET
-            total_amount = total_price - COALESCE(discount, 0) + COALESCE(tax, 0),
-            remaining_amount = total_price - COALESCE(discount, 0) + COALESCE(tax, 0) - COALESCE(paid_amount, 0)
+            total_amount = COALESCE(total_price, 0),
+            remaining_amount = COALESCE(total_price, 0) - COALESCE(paid_amount, 0)
+            WHERE total_amount = 0
         ');
     }
 

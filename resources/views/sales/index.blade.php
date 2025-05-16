@@ -209,6 +209,7 @@
                         <th>فروشنده</th>
                         <th>وضعیت</th>
                         <th>مبلغ کل</th>
+                        <th>مبلغ پرداخت شده</th>
                         <th>عملیات</th>
                     </tr>
                 </thead>
@@ -217,9 +218,7 @@
                     <tr>
                         <td>
                             <div class="form-check">
-                                <input class="form-check-input sale-checkbox"
-                                       type="checkbox"
-                                       value="{{ $sale->id }}">
+                                <input class="form-check-input sale-checkbox" type="checkbox" value="{{ $sale->id }}">
                             </div>
                         </td>
                         <td>
@@ -234,7 +233,7 @@
                         <td>
                             <div class="d-flex align-items-center gap-2">
                                 <div class="customer-avatar">
-                                    @if($sale->customer->avatar)
+                                    @if($sale->customer && $sale->customer->avatar)
                                         <img src="{{ $sale->customer->avatar }}"
                                              alt="{{ $sale->customer->full_name }}"
                                              class="rounded-circle"
@@ -242,21 +241,29 @@
                                              height="32">
                                     @else
                                         <div class="avatar-placeholder">
-                                            {{ substr($sale->customer->full_name, 0, 2) }}
+                                            {{ $sale->customer ? substr($sale->customer->full_name, 0, 2) : 'NA' }}
                                         </div>
                                     @endif
                                 </div>
                                 <div>
-                                    <div>{{ $sale->customer->full_name }}</div>
-                                    <small class="text-muted">{{ $sale->customer->mobile }}</small>
+                                    <div>{{ optional($sale->customer)->full_name }}</div>
+                                    <small class="text-muted">{{ optional($sale->customer)->mobile }}</small>
                                 </div>
                             </div>
                         </td>
-                        <td>{{ $sale->seller->full_name }}</td>
+                        <td>{{ optional($sale->seller)->full_name }}</td>
                         <td>
-                            <span class="badge bg-{{ $sale->status_color }} bg-opacity-10 text-{{ $sale->status_color }}">
+                            <span class="badge bg-{{ $sale->status_color }}">
                                 {{ $sale->status_label }}
                             </span>
+                        </td>
+                        <td>
+                            <div class="d-flex flex-column">
+                                <span class="fw-bold">{{ number_format($sale->total_price) }} تومان</span>
+                                @if($sale->discount > 0)
+                                    <small class="text-success">{{ number_format($sale->discount) }} تومان تخفیف</small>
+                                @endif
+                            </div>
                         </td>
                         <td>
                             <div class="d-flex flex-column">
@@ -280,6 +287,7 @@
                                    title="مشاهده جزئیات">
                                     <i class="fas fa-eye"></i>
                                 </a>
+                                @if($sale->status === 'pending')
                                 <a href="{{ route('sales.edit', $sale) }}"
                                    class="btn btn-sm btn-outline-warning"
                                    data-bs-toggle="tooltip"
@@ -287,25 +295,26 @@
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 <button type="button"
-                                        class="btn btn-sm btn-outline-info"
-                                        data-bs-toggle="tooltip"
-                                        title="چاپ فاکتور"
-                                        onclick="printInvoice({{ $sale->id }})">
-                                    <i class="fas fa-print"></i>
-                                </button>
-                                <button type="button"
                                         class="btn btn-sm btn-outline-danger"
+                                        onclick="deleteSale({{ $sale->id }})"
                                         data-bs-toggle="tooltip"
-                                        title="حذف"
-                                        onclick="deleteSale({{ $sale->id }})">
+                                        title="حذف">
                                     <i class="fas fa-trash"></i>
+                                </button>
+                                @endif
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-info"
+                                        onclick="printInvoice({{ $sale->id }})"
+                                        data-bs-toggle="tooltip"
+                                        title="چاپ فاکتور">
+                                    <i class="fas fa-print"></i>
                                 </button>
                             </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="text-center py-4">
+                        <td colspan="9" class="text-center py-4">
                             <div class="empty-state">
                                 <img src="{{ asset('images/empty-sales.svg') }}"
                                      alt="بدون فروش"
@@ -336,70 +345,72 @@
                     <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
                     <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
                 </select>
-                <span class="text-muted">نمایش {{ $sales->firstItem() }} تا {{ $sales->lastItem() }} از {{ $sales->total() }} مورد</span>
+                <span class="text-muted">
+                    نمایش {{ $sales->firstItem() ?? 0 }} تا {{ $sales->lastItem() ?? 0 }} از {{ $sales->total() ?? 0 }} مورد
+                </span>
             </div>
             {{ $sales->withQueryString()->links() }}
         </div>
     </div>
 </div>
 
-<!-- مودال خروجی گرفتن -->
-<div class="modal fade" id="exportModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-file-export me-1"></i>
-                    خروجی گرفتن
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="exportForm" action="{{ route('sales.export') }}" method="POST">
-                    @csrf
-                    <div class="mb-3">
-                        <label class="form-label">فرمت فایل</label>
-                        <select class="form-select" name="format" required>
-                            <option value="excel">Excel</option>
-                            <option value="pdf">PDF</option>
-                            <option value="csv">CSV</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">محدوده زمانی</label>
-                        <input type="text"
-                               class="form-control"
-                               name="date_range"
-                               id="exportDateRange">
-                    </div>
-                    <div class="mb-3">
-                        <div class="form-check">
-                            <input type="checkbox"
-                                   class="form-check-input"
-                                   name="include_details"
-                                   id="includeDetails">
-                            <label class="form-check-label" for="includeDetails">
-                                شامل جزئیات اقلام
-                            </label>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
-                <button type="submit" form="exportForm" class="btn btn-primary">
-                    <i class="fas fa-download me-1"></i>
-                    دریافت فایل
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+@include('sales.partials.export-modal')
+
 @endsection
 
 @section('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/min/moment.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/moment-jalaali@0.9.2/build/moment-jalaali.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-    <script src="{{ asset('js/sales-list.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/min/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-jalaali@0.9.2/build/moment-jalaali.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script>
+$(document).ready(function() {
+    // تنظیمات DateRangePicker
+    $('#dateRange').daterangepicker({
+        locale: {
+            format: 'jYYYY/jMM/jDD'
+        },
+        autoUpdateInput: false
+    });
+
+    // هندل کردن انتخاب تاریخ
+    $('#dateRange').on('apply.daterangepicker', function(ev, picker) {
+        $(this).val(picker.startDate.format('jYYYY/jMM/jDD') + ' - ' + picker.endDate.format('jYYYY/jMM/jDD'));
+    });
+
+    // هندل کردن پاک کردن تاریخ
+    $('#dateRange').on('cancel.daterangepicker', function(ev, picker) {
+        $(this).val('');
+    });
+
+    // Select All functionality
+    $('#selectAll').change(function() {
+        $('.sale-checkbox').prop('checked', $(this).prop('checked'));
+    });
+});
+
+function deleteSale(id) {
+    if (confirm('آیا از حذف این فاکتور اطمینان دارید؟')) {
+        axios.delete(`/sales/${id}`)
+            .then(response => {
+                if (response.data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                alert('خطا در حذف فاکتور');
+                console.error(error);
+            });
+    }
+}
+
+function printInvoice(id) {
+    window.open(`/sales/${id}/print`, '_blank');
+}
+
+function changePerPage(select) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('per_page', select.value);
+    window.location.href = url.toString();
+}
+</script>
 @endsection
