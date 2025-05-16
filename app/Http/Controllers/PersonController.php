@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use App\Models\Province;
+use App\Models\CustomerPurchase;
 
 class PersonController extends Controller
 {
@@ -120,4 +121,54 @@ class PersonController extends Controller
             return back()->with('error', 'خطا در ثبت اطلاعات: ' . $e->getMessage())->withInput();
         }
     }
+
+
+    public function show(Person $person, Request $request)
+    {
+        $query = CustomerPurchase::where('customer_id', $person->id)->with('invoice');
+
+        // فیلتر جستجو
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->whereHas('invoice', function ($q) use ($search) {
+                $q->where('id', 'like', "%$search%")
+                  ->orWhere('reference', 'like', "%$search%");
+            });
+        }
+        if ($request->filled('from') && $request->filled('to')) {
+            $query->whereBetween('purchase_date', [$request->input('from'), $request->input('to')]);
+        }
+
+        $purchases = $query->orderByDesc('purchase_date')->paginate(10);
+
+        $totalAmount = $query->sum('total_amount');
+
+        return view('persons.show', compact('person', 'purchases', 'totalAmount'));
+    }
+    public function updatePercent(Person $person, Request $request)
+    {
+        $request->validate([
+            'purchase_percent' => 'required|numeric|min:0|max:100'
+        ]);
+        $person->purchase_percent = $request->input('purchase_percent');
+        $person->save();
+        return redirect()->route('persons.show', $person)->with('success', 'درصد با موفقیت ذخیره شد.');
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

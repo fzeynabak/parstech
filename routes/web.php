@@ -36,6 +36,10 @@ use App\Http\Controllers\Api\ServiceApiController;
 Route::get('/sales/next-invoice-number', [SaleController::class, 'nextInvoiceNumber']);
 Route::get('/sales', [SaleController::class, 'index'])->name('sales.index');
 
+
+Route::get('/persons/{person}', [PersonController::class, 'show'])->name('persons.show');
+Route::post('/persons/{person}/percent', [PersonController::class, 'updatePercent'])->name('persons.updatePercent');
+
 Route::get('/sales/item-info', [ProductController::class, 'itemInfo']); // هندل کردن هم محصول و هم خدمت
 Route::get('/products/ajax-list', [ProductController::class, 'ajaxList']);
 Route::get('/services/ajax-list', [ServiceController::class, 'ajaxList']);

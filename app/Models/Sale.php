@@ -34,4 +34,8 @@ class Sale extends Model
     {
         return $this->hasMany(SaleItem::class);
     }
+    public function person()
+    {
+        return $this->belongsTo(\App\Models\Person::class, 'person_id');
+    }
 }

@@ -24,8 +24,11 @@
             @foreach($sales as $sale)
             <tr>
                 <td>{{ $sale->invoice_number }}</td>
-                <td>{{ $sale->customer ? $sale->customer->first_name . ' ' . $sale->customer->last_name : '-' }}</td>
-                <td>{{ $sale->seller ? $sale->seller->first_name . ' ' . $sale->seller->last_name : '-' }}</td>
+                <td>
+                    <a href="{{ route('persons.show', $sale->person_id) }}">
+                        {{ $sale->person->first_name }} {{ $sale->person->last_name }}
+                    </a>
+                </td>
                 <td>{{ \Morilog\Jalali\Jalalian::fromDateTime($sale->issued_at)->format('Y/m/d') }}</td>
                 <td>{{ number_format($sale->total_price) }} ریال</td>
                 <td>
