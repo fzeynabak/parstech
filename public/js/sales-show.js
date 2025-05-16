@@ -253,3 +253,154 @@ const FarsiNumber = {
         }
     }
 };
+// مدیریت فرم‌های پرداخت
+const PaymentManager = {
+    init() {
+        this.setupPaymentMethodSelect();
+        this.setupMultiPayment();
+        this.setupFormValidation();
+    },
+
+    // تنظیم انتخاب روش پرداخت
+    setupPaymentMethodSelect() {
+        const select = document.getElementById('paymentMethodSelect');
+        if (!select) return;
+
+        select.addEventListener('change', () => {
+            // مخفی کردن همه فرم‌ها
+            document.querySelectorAll('.payment-form').forEach(form => {
+                form.classList.add('d-none');
+            });
+
+            // نمایش فرم مربوط به روش انتخاب شده
+            const selectedForm = document.getElementById(`${select.value}PaymentForm`);
+            if (selectedForm) {
+                selectedForm.classList.remove('d-none');
+            }
+        });
+    },
+
+    // تنظیم پرداخت چند روشه
+    setupMultiPayment() {
+        // چک‌باکس‌های روش پرداخت
+        const checkboxes = {
+            cash: document.getElementById('multiCashCheck'),
+            card: document.getElementById('multiCardCheck'),
+            cheque: document.getElementById('multiChequeCheck')
+        };
+
+        // فیلدهای مربوط به هر روش
+        const fields = {
+            cash: document.getElementById('multiCashFields'),
+            card: document.getElementById('multiCardFields'),
+            cheque: document.getElementById('multiChequeFields')
+        };
+
+        // رویداد تغییر برای هر چک‌باکس
+        Object.keys(checkboxes).forEach(key => {
+            const checkbox = checkboxes[key];
+            if (!checkbox) return;
+
+            checkbox.addEventListener('change', () => {
+                const field = fields[key];
+                if (field) {
+                    field.classList.toggle('d-none', !checkbox.checked);
+
+                    // پاک کردن مقادیر در صورت غیرفعال شدن
+                    if (!checkbox.checked) {
+                        field.querySelectorAll('input').forEach(input => {
+                            input.value = '';
+                        });
+                        this.updateMultiPaymentTotal();
+                    }
+                }
+            });
+        });
+
+        // بروزرسانی جمع کل با تغییر مبالغ
+        document.querySelectorAll('.multi-amount').forEach(input => {
+            input.addEventListener('input', () => this.updateMultiPaymentTotal());
+        });
+    },
+
+    // بروزرسانی جمع کل پرداخت چندروشه
+    updateMultiPaymentTotal() {
+        const amounts = document.querySelectorAll('.multi-amount');
+        let total = 0;
+
+        amounts.forEach(input => {
+            const value = parseFloat(input.value) || 0;
+            total += value;
+        });
+
+        const totalElement = document.getElementById('multiPaymentTotal');
+        if (totalElement) {
+            totalElement.textContent = this.formatMoney(total) + ' تومان';
+        }
+
+        // بروزرسانی مانده حساب
+        const remainingElement = document.getElementById('multiPaymentRemaining');
+        if (remainingElement) {
+            const totalDue = parseFloat(remainingElement.dataset.total) || 0;
+            const remaining = totalDue - total;
+            remainingElement.textContent = this.formatMoney(remaining) + ' تومان';
+            remainingElement.classList.toggle('text-danger', remaining > 0);
+            remainingElement.classList.toggle('text-success', remaining <= 0);
+        }
+    },
+
+    // اعتبارسنجی فرم
+    setupFormValidation() {
+        const form = document.getElementById('statusUpdateForm');
+        if (!form) return;
+
+        form.addEventListener('submit', (e) => {
+            const method = document.getElementById('paymentMethodSelect').value;
+
+            if (!method) {
+                e.preventDefault();
+                alert('لطفاً روش پرداخت را انتخاب کنید');
+                return;
+            }
+
+            if (method === 'multi') {
+                const totalAmount = this.calculateMultiPaymentTotal();
+                const requiredAmount = parseFloat(document.getElementById('multiPaymentRemaining').dataset.total) || 0;
+
+                if (totalAmount === 0) {
+                    e.preventDefault();
+                    alert('لطفاً حداقل یک مبلغ پرداختی وارد کنید');
+                    return;
+                }
+
+                if (totalAmount > requiredAmount) {
+                    e.preventDefault();
+                    alert('مجموع مبالغ وارد شده بیشتر از مبلغ باقیمانده است');
+                    return;
+                }
+            }
+        });
+    },
+
+    // محاسبه جمع کل پرداخت چندروشه
+    calculateMultiPaymentTotal() {
+        const amounts = document.querySelectorAll('.multi-amount');
+        let total = 0;
+
+        amounts.forEach(input => {
+            total += parseFloat(input.value) || 0;
+        });
+
+        return total;
+    },
+
+    // فرمت‌بندی مبلغ
+    formatMoney(amount) {
+        return new Intl.NumberFormat('fa-IR').format(amount);
+    }
+};
+
+// اجرای اسکریپت‌ها بعد از لود صفحه
+document.addEventListener('DOMContentLoaded', () => {
+    PaymentManager.init();
+});

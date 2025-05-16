@@ -261,52 +261,223 @@
 
         <!-- فرم تغییر وضعیت -->
         @if($sale->status === 'pending')
-        <div class="summary-card">
-            <h3 class="summary-title">تغییر وضعیت</h3>
-            <form id="statusUpdateForm" action="{{ route('sales.update-status', $sale) }}" method="POST">
-                @csrf
-                @method('PATCH')
-                <div class="form-group mb-3">
-                    <label class="form-label">وضعیت جدید</label>
-                    <select name="status" class="form-select" required>
-                        <option value="">انتخاب کنید</option>
-                        <option value="paid">پرداخت شده</option>
-                        <option value="completed">تکمیل شده</option>
-                        <option value="cancelled">لغو شده</option>
-                    </select>
-                </div>
+<div class="summary-card">
+    <h3 class="summary-title">تغییر وضعیت پرداخت</h3>
+    <form id="statusUpdateForm" action="{{ route('sales.update-status', $sale) }}" method="POST">
+        @csrf
+        @method('PATCH')
 
-                <div id="paymentMethodFields" class="d-none">
-                    <div class="form-group mb-3">
-                        <label class="form-label">روش پرداخت</label>
-                        <select name="payment_method" class="form-select">
-                            <option value="">انتخاب کنید</option>
-                            <option value="cash">نقدی</option>
-                            <option value="card">کارت به کارت</option>
-                            <option value="pos">دستگاه کارتخوان</option>
-                            <option value="online">پرداخت آنلاین</option>
-                            <option value="cheque">چک</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group mb-3">
-                        <label class="form-label">شماره مرجع پرداخت</label>
-                        <input type="text" name="payment_reference" class="form-control">
+        <!-- مبلغ کل و باقیمانده -->
+        <div class="invoice-payment-status mb-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="payment-info-box">
+                        <div class="title">مبلغ کل</div>
+                        <div class="amount">{{ number_format($sale->total_amount) }} تومان</div>
                     </div>
                 </div>
-
-                <div id="cancellationReasonField" class="form-group mb-3 d-none">
-                    <label class="form-label">دلیل لغو</label>
-                    <textarea name="cancellation_reason" class="form-control" rows="3"></textarea>
+                <div class="col-md-4">
+                    <div class="payment-info-box">
+                        <div class="title">پرداخت شده</div>
+                        <div class="amount text-success">{{ number_format($sale->paid_amount) }} تومان</div>
+                    </div>
                 </div>
-
-                <button type="submit" class="btn btn-primary w-100">
-                    <i class="fas fa-save"></i>
-                    <span>ثبت تغییرات</span>
-                </button>
-            </form>
+                <div class="col-md-4">
+                    <div class="payment-info-box">
+                        <div class="title">مانده حساب</div>
+                        <div class="amount text-danger">{{ number_format($sale->remaining_amount) }} تومان</div>
+                    </div>
+                </div>
+            </div>
         </div>
-        @endif
+
+        <!-- انتخاب روش پرداخت -->
+        <div class="form-group mb-3">
+            <label class="form-label">روش پرداخت</label>
+            <select name="payment_method" class="form-select" required id="paymentMethodSelect">
+                <option value="">انتخاب کنید</option>
+                <option value="cash">پرداخت نقدی</option>
+                <option value="card">کارت به کارت</option>
+                <option value="pos">دستگاه کارتخوان</option>
+                <option value="online">پرداخت آنلاین</option>
+                <option value="cheque">چک</option>
+                <option value="multi">چند روش پرداخت</option>
+            </select>
+        </div>
+
+        <!-- فرم پرداخت نقدی -->
+        <div id="cashPaymentForm" class="payment-form d-none">
+            <div class="form-group mb-3">
+                <label class="form-label">مبلغ نقدی (تومان)</label>
+                <input type="number" name="cash_amount" class="form-control" placeholder="مبلغ را وارد کنید">
+            </div>
+            <div class="form-group mb-3">
+                <label class="form-label">شماره رسید</label>
+                <input type="text" name="cash_reference" class="form-control" placeholder="شماره رسید را وارد کنید">
+            </div>
+        </div>
+
+        <!-- فرم کارت به کارت -->
+        <div id="cardPaymentForm" class="payment-form d-none">
+            <div class="form-group mb-3">
+                <label class="form-label">مبلغ کارت به کارت (تومان)</label>
+                <input type="number" name="card_amount" class="form-control" placeholder="مبلغ را وارد کنید">
+            </div>
+            <div class="form-group mb-3">
+                <label class="form-label">شماره کارت مقصد</label>
+                <input type="text" name="card_number" class="form-control" placeholder="شماره کارت را وارد کنید">
+            </div>
+            <div class="form-group mb-3">
+                <label class="form-label">نام بانک</label>
+                <input type="text" name="card_bank" class="form-control" placeholder="نام بانک را وارد کنید">
+            </div>
+            <div class="form-group mb-3">
+                <label class="form-label">شماره پیگیری</label>
+                <input type="text" name="card_reference" class="form-control" placeholder="شماره پیگیری را وارد کنید">
+            </div>
+        </div>
+
+        <!-- فرم دستگاه کارتخوان -->
+        <div id="posPaymentForm" class="payment-form d-none">
+            <div class="form-group mb-3">
+                <label class="form-label">مبلغ کارتخوان (تومان)</label>
+                <input type="number" name="pos_amount" class="form-control" placeholder="مبلغ را وارد کنید">
+            </div>
+            <div class="form-group mb-3">
+                <label class="form-label">شماره پایانه</label>
+                <input type="text" name="pos_terminal" class="form-control" placeholder="شماره پایانه را وارد کنید">
+            </div>
+            <div class="form-group mb-3">
+                <label class="form-label">شماره پیگیری</label>
+                <input type="text" name="pos_reference" class="form-control" placeholder="شماره پیگیری را وارد کنید">
+            </div>
+        </div>
+
+        <!-- فرم پرداخت آنلاین -->
+        <div id="onlinePaymentForm" class="payment-form d-none">
+            <div class="form-group mb-3">
+                <label class="form-label">مبلغ پرداخت آنلاین (تومان)</label>
+                <input type="number" name="online_amount" class="form-control" placeholder="مبلغ را وارد کنید">
+            </div>
+            <div class="form-group mb-3">
+                <label class="form-label">شماره تراکنش</label>
+                <input type="text" name="online_transaction_id" class="form-control" placeholder="شماره تراکنش را وارد کنید">
+            </div>
+        </div>
+
+        <!-- فرم چک -->
+        <div id="chequePaymentForm" class="payment-form d-none">
+            <div class="form-group mb-3">
+                <label class="form-label">مبلغ چک (تومان)</label>
+                <input type="number" name="cheque_amount" class="form-control" placeholder="مبلغ را وارد کنید">
+            </div>
+            <div class="form-group mb-3">
+                <label class="form-label">شماره چک</label>
+                <input type="text" name="cheque_number" class="form-control" placeholder="شماره چک را وارد کنید">
+            </div>
+            <div class="form-group mb-3">
+                <label class="form-label">نام بانک</label>
+                <input type="text" name="cheque_bank" class="form-control" placeholder="نام بانک را وارد کنید">
+            </div>
+            <div class="form-group mb-3">
+                <label class="form-label">تاریخ سررسید</label>
+                <input type="date" name="cheque_due_date" class="form-control">
+            </div>
+        </div>
+
+        <!-- فرم چند روش پرداخت -->
+        <div id="multiPaymentForm" class="payment-form d-none">
+            <div class="alert alert-info">
+                لطفاً مبالغ پرداختی برای هر روش را مشخص کنید.
+            </div>
+
+            <!-- نقدی -->
+            <div class="multi-payment-section">
+                <div class="form-check mb-2">
+                    <input type="checkbox" class="form-check-input" id="multiCashCheck">
+                    <label class="form-check-label" for="multiCashCheck">پرداخت نقدی</label>
+                </div>
+                <div id="multiCashFields" class="d-none">
+                    <div class="form-group mb-3">
+                        <label class="form-label">مبلغ نقدی (تومان)</label>
+                        <input type="number" name="multi_cash_amount" class="form-control multi-amount" placeholder="مبلغ را وارد کنید">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">شماره رسید</label>
+                        <input type="text" name="multi_cash_reference" class="form-control" placeholder="شماره رسید را وارد کنید">
+                    </div>
+                </div>
+            </div>
+
+            <!-- کارت به کارت -->
+            <div class="multi-payment-section mt-3">
+                <div class="form-check mb-2">
+                    <input type="checkbox" class="form-check-input" id="multiCardCheck">
+                    <label class="form-check-label" for="multiCardCheck">کارت به کارت</label>
+                </div>
+                <div id="multiCardFields" class="d-none">
+                    <div class="form-group mb-3">
+                        <label class="form-label">مبلغ کارت به کارت (تومان)</label>
+                        <input type="number" name="multi_card_amount" class="form-control multi-amount" placeholder="مبلغ را وارد کنید">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">شماره کارت</label>
+                        <input type="text" name="multi_card_number" class="form-control" placeholder="شماره کارت را وارد کنید">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">شماره پیگیری</label>
+                        <input type="text" name="multi_card_reference" class="form-control" placeholder="شماره پیگیری را وارد کنید">
+                    </div>
+                </div>
+            </div>
+
+            <!-- چک -->
+            <div class="multi-payment-section mt-3">
+                <div class="form-check mb-2">
+                    <input type="checkbox" class="form-check-input" id="multiChequeCheck">
+                    <label class="form-check-label" for="multiChequeCheck">چک</label>
+                </div>
+                <div id="multiChequeFields" class="d-none">
+                    <div class="form-group mb-3">
+                        <label class="form-label">مبلغ چک (تومان)</label>
+                        <input type="number" name="multi_cheque_amount" class="form-control multi-amount" placeholder="مبلغ را وارد کنید">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">شماره چک</label>
+                        <input type="text" name="multi_cheque_number" class="form-control" placeholder="شماره چک را وارد کنید">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">تاریخ سررسید</label>
+                        <input type="date" name="multi_cheque_due_date" class="form-control">
+                    </div>
+                </div>
+            </div>
+
+            <div class="payment-summary mt-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>جمع مبالغ وارد شده:</span>
+                    <span id="multiPaymentTotal" class="text-primary">۰ تومان</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                    <span>مانده حساب:</span>
+                    <span id="multiPaymentRemaining" class="text-danger">{{ number_format($sale->remaining_amount) }} تومان</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- یادداشت پرداخت -->
+        <div class="form-group mb-3 mt-4">
+            <label class="form-label">یادداشت پرداخت</label>
+            <textarea name="payment_notes" class="form-control" rows="3" placeholder="توضیحات اضافی در مورد پرداخت را اینجا وارد کنید..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">
+            <i class="fas fa-save"></i>
+            <span>ثبت اطلاعات پرداخت</span>
+        </button>
+    </form>
+</div>
+@endif
     </div>
 
     <!-- یادداشت‌ها -->
