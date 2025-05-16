@@ -17,11 +17,24 @@ class SaleController extends Controller
         $sales = Sale::with(['seller', 'customer', 'items.product'])->orderByDesc('id')->paginate(20);
         return view('sales.index', compact('sales'));
     }
-        public function nextInvoiceNumber()
+
+    /**
+     * دریافت شماره فاکتور بعدی به صورت سریالی (invoices-10001 و ...)
+     */
+    public function nextInvoiceNumber()
     {
-        $lastSale = Sale::orderBy('invoice_number', 'desc')->first();
-        $nextNumber = $lastSale ? ($lastSale->invoice_number + 1) : 1;
-        return response()->json(['next_invoice_number' => $nextNumber]);
+        // آخرین شماره سریالی که با invoices- شروع می‌شود را پیدا کن
+        $lastSerial = Sale::where('invoice_number', 'like', 'invoices-%')
+            ->orderByRaw("CAST(SUBSTRING(invoice_number, 10) AS UNSIGNED) DESC")
+            ->first();
+
+        if ($lastSerial && preg_match('/invoices-(\d+)/', $lastSerial->invoice_number, $m)) {
+            $nextNumber = 'invoices-' . (intval($m[1]) + 1);
+        } else {
+            $nextNumber = 'invoices-10001';
+        }
+
+        return response()->json(['number' => $nextNumber]);
     }
 
     public function create()
@@ -29,10 +42,14 @@ class SaleController extends Controller
         $sellers = Seller::all();
         $products = Product::all();
         $currencies = Currency::all();
-        $last = Sale::orderByDesc('id')->first();
-        $nextNumber = 'invoices-10001';
-        if ($last && preg_match('/invoices-(\d+)/', $last->invoice_number, $m)) {
+        // شماره پیشنهادی برای اولین بار
+        $lastSerial = Sale::where('invoice_number', 'like', 'invoices-%')
+            ->orderByRaw("CAST(SUBSTRING(invoice_number, 10) AS UNSIGNED) DESC")
+            ->first();
+        if ($lastSerial && preg_match('/invoices-(\d+)/', $lastSerial->invoice_number, $m)) {
             $nextNumber = 'invoices-' . (intval($m[1]) + 1);
+        } else {
+            $nextNumber = 'invoices-10001';
         }
         return view('sales.create', compact('sellers', 'products', 'currencies', 'nextNumber'));
     }

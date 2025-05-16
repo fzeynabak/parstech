@@ -7,7 +7,17 @@ document.addEventListener('DOMContentLoaded', function () {
         openCurrencyModal.addEventListener('click', function (e) {
             e.preventDefault();
             loadCurrencies();
-            new bootstrap.Modal(document.getElementById('currencyModal')).show();
+            // Bootstrap 5
+            if (typeof bootstrap !== "undefined" && bootstrap.Modal) {
+                const modalEl = document.getElementById('currencyModal');
+                if (modalEl) {
+                    new bootstrap.Modal(modalEl).show();
+                } else {
+                    alert('مدال با id currencyModal پیدا نشد!');
+                }
+            } else {
+                alert('Bootstrap Modal بارگذاری نشده است!');
+            }
         });
     }
 
@@ -78,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch(`/currencies/${id}`, {
             method: 'DELETE',
             headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                'X-CSRF-TOKEN': csrf
             }
         })
         .then(() => loadCurrencies());
