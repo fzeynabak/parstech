@@ -208,10 +208,21 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // رندر جدول فاکتور و کنترل شرط‌ها
+    // رندر جدول فاکتور و کنترل شرط‌ها (حفظ فوکوس و کرسر)
     function renderInvoiceItemsTable() {
         let tbody = document.getElementById('invoice-items-body');
         if (!tbody) return;
+
+        // ذخیره input فوکوس‌شده و موقعیت کرسر
+        let active = document.activeElement;
+        let focusInfo = null;
+        if (active && active.classList && typeof active.selectionStart === 'number') {
+            focusInfo = {
+                name: active.name,
+                idx: active.dataset.idx,
+                pos: active.selectionStart
+            };
+        }
 
         tbody.innerHTML = '';
         let total = 0, count = 0;
@@ -280,13 +291,20 @@ document.addEventListener("DOMContentLoaded", function () {
         if (totalCountEl) totalCountEl.textContent = count;
         if (totalAmountEl) totalAmountEl.textContent = total.toLocaleString() + ' ریال';
         if (invoiceTotalEl) invoiceTotalEl.textContent = total.toLocaleString() + ' ریال';
+
+        // بعد از رندر، فوکوس و کرسر را بازگردان
+        if (focusInfo) {
+            let selector = `[name="${focusInfo.name}"][data-idx="${focusInfo.idx}"]`;
+            let input = tbody.querySelector(selector);
+            if (input) {
+                input.focus();
+                input.setSelectionRange(focusInfo.pos, focusInfo.pos);
+            }
+        }
     }
 
     // کنترل شرط‌ها روی ورودی‌های جدول
     document.body.addEventListener('input', function (e) {
-        // ذخیره فوکوس و موقعیت کرسر
-        let active = document.activeElement;
-        let cursorPos = active && typeof active.selectionStart === 'number' ? active.selectionStart : null;
         let classList = e.target.classList;
 
         if (classList.contains('item-count-input')) {
@@ -330,15 +348,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (classList.contains('item-desc-input')) {
             let idx = parseInt(e.target.dataset.idx);
             invoiceItems[idx].desc = e.target.value;
-        }
-
-        // پس از رندر، اگر input فعال بود، فوکوس و موقعیت کرسر را بازگردان
-        if (active && active.name && cursorPos !== null) {
-            let newInput = document.querySelector(`[name="${active.name}"][data-idx="${active.dataset.idx}"]`);
-            if (newInput) {
-                newInput.focus();
-                newInput.setSelectionRange(cursorPos, cursorPos);
-            }
         }
     });
 

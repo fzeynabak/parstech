@@ -62,12 +62,12 @@
             </div>
             <div class="col-md-2">
                 <label>ارجاع</label>
-                <input type="text" class="form-control" name="reference" id="reference">
+                <input type="text" class="form-control" name="reference" id="reference" value="{{ old('reference') }}">
             </div>
             <div class="col-md-3">
                 <label>تاریخ صدور</label>
                 <div class="input-group">
-                    <input type="text" class="form-control" name="issued_at_jalali" id="issued_at_jalali" value="" readonly autocomplete="off">
+                    <input type="text" class="form-control" name="issued_at_jalali" id="issued_at_jalali" value="{{ old('issued_at_jalali') }}" readonly autocomplete="off">
                 </div>
             </div>
             <div class="col-md-2">
@@ -75,7 +75,9 @@
                 <select class="form-select" name="currency_id" id="currency_id" required>
                     <option value="">انتخاب کنید...</option>
                     @foreach($currencies as $currency)
-                        <option value="{{ $currency->id }}">{{ $currency->name }} - {{ $currency->code }}</option>
+                        <option value="{{ $currency->id }}" {{ old('currency_id') == $currency->id ? 'selected' : '' }}>
+                            {{ $currency->name }} - {{ $currency->code }}
+                        </option>
                     @endforeach
                 </select>
             </div>
@@ -85,22 +87,24 @@
             <div class="col-md-3">
                 <label>مشتری <span class="text-danger">*</span></label>
                 <div class="input-group">
-                    <input type="text" class="form-control" id="customer_search" placeholder="انتخاب کنید...">
-                    <input type="hidden" name="customer_id" id="customer_id" required>
+                    <input type="text" class="form-control" id="customer_search" placeholder="انتخاب کنید..." value="{{ old('customer_name') }}">
+                    <input type="hidden" name="customer_id" id="customer_id" value="{{ old('customer_id') }}" required>
                     <button type="button" class="btn btn-outline-success" id="addCustomerBtn"><i class="fa fa-plus"></i></button>
                 </div>
                 <div class="dropdown-menu" id="customer-search-results" style="width:100%"></div>
             </div>
             <div class="col-md-3">
                 <label>عنوان</label>
-                <input type="text" class="form-control" name="title" id="invoice_title" placeholder="عنوان...">
+                <input type="text" class="form-control" name="title" id="invoice_title" placeholder="عنوان..." value="{{ old('title') }}">
             </div>
             <div class="col-md-3">
                 <label>فروشنده <span class="text-danger">*</span></label>
                 <select class="form-select" name="seller_id" id="seller_id" required>
                     <option value="">انتخاب کنید...</option>
                     @foreach($sellers as $seller)
-                        <option value="{{ $seller->id }}">{{ $seller->seller_code }} - {{ $seller->first_name }} {{ $seller->last_name }}</option>
+                        <option value="{{ $seller->id }}" {{ old('seller_id') == $seller->id ? 'selected' : '' }}>
+                            {{ $seller->seller_code }} - {{ $seller->first_name }} {{ $seller->last_name }}
+                        </option>
                     @endforeach
                 </select>
             </div>
@@ -118,7 +122,7 @@
             </div>
         </div>
 
-        <input type="hidden" name="products_input" id="products_input">
+        <input type="hidden" name="products_input" id="products_input" value="{{ old('products_input') }}">
 
         <div class="row align-items-center mt-4">
             <div class="col-md-9 text-end">
