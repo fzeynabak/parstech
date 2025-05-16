@@ -10,20 +10,40 @@ class Person extends Model
     use HasFactory;
 
     protected $fillable = [
-    'accounting_code', 'type', 'first_name', 'last_name', 'nickname', 'credit_limit', 'price_list', 'tax_type',
-    'national_code', 'economic_code', 'registration_number', 'branch_code', 'description', 'address', 'country',
-    'province', 'city', 'postal_code', 'phone', 'mobile', 'fax', 'phone1', 'phone2', 'phone3', 'email', 'website',
-    'birth_date', 'marriage_date', 'join_date', 'company_name', 'title'
-];
+        'accounting_code', 'type', 'first_name', 'last_name', 'nickname', 'credit_limit', 'price_list', 'tax_type',
+        'national_code', 'economic_code', 'registration_number', 'branch_code', 'description', 'address', 'country',
+        'province', 'city', 'postal_code', 'phone', 'mobile', 'fax', 'phone1', 'phone2', 'phone3', 'email', 'website',
+        'birth_date', 'marriage_date', 'join_date', 'company_name', 'title'
+    ];
 
     protected $table = 'persons';
 
-  public function bankAccounts()
-{
-    return $this->hasMany(\App\Models\BankAccount::class, 'person_id');
-}
+    protected $appends = ['display_name'];
 
-    // اعتبارسنجی کد ملی
+    public function getDisplayNameAttribute()
+    {
+        if (!empty($this->company_name)) {
+            return $this->company_name;
+        }
+
+        $name = trim($this->first_name . ' ' . $this->last_name);
+        if (!empty($name)) {
+            return $name;
+        }
+
+        return $this->nickname ?? 'بدون نام';
+    }
+
+    public function getFullNameAttribute()
+    {
+        return trim($this->first_name . ' ' . $this->last_name) ?: ($this->company_name ?? $this->nickname ?? 'بدون نام');
+    }
+
+    public function bankAccounts()
+    {
+        return $this->hasMany(BankAccount::class, 'person_id');
+    }
+
     public static function validateNationalCode($code)
     {
         if (!preg_match('/^[0-9]{10}$/', $code)) {
@@ -46,17 +66,31 @@ class Person extends Model
 
     public function invoices()
     {
-        return $this->hasMany(\App\Models\Invoice::class, 'customer_id');
+        return $this->hasMany(Invoice::class, 'customer_id');
     }
-    public function sales() {
-        return $this->hasMany(\App\Models\Sale::class, 'customer_id');
+
+    public function sales()
+    {
+        return $this->hasMany(Sale::class, 'customer_id');
     }
-    public function purchasesTotal() {
+
+    public function purchases()
+    {
+        return $this->hasMany(Sale::class, 'customer_id');
+    }
+
+    public function purchasesTotal()
+    {
         return $this->sales()->sum('total_price');
     }
-    public function purchasesCount() {
+
+    public function purchasesCount()
+    {
         return $this->sales()->count();
     }
 
-
+    public function lastPurchase()
+    {
+        return $this->sales()->latest()->first();
+    }
 }
