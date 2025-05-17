@@ -23,7 +23,7 @@ class SaleController extends Controller
     }
     public function index(Request $request)
     {
-        $query = Sale::with(['seller', 'customer', 'items.product', 'currency']);
+        $baseQuery = Sale::with(['seller', 'customer', 'items.product', 'currency']);
 
         // اعمال فیلترها
         if ($request->filled('search')) {
@@ -77,13 +77,13 @@ class SaleController extends Controller
         $perPage = $request->per_page ?? 10;
 
         // دریافت داده‌ها
-        $sales = $query->paginate($perPage)->withQueryString();
+        $sales = (clone $baseQuery)->orderBy($sortField, $sortOrder)->paginate($perPage)->withQueryString();
 
         // محاسبه آمار
-        $totalSales = $query->sum('total_price');
-        $salesCount = $query->count();
+        $totalSales = (clone $baseQuery)->sum('total_price');
+        $salesCount = (clone $baseQuery)->count();
         $averageSale = $salesCount > 0 ? $totalSales / $salesCount : 0;
-        $todaySales = $query->whereDate('created_at', Carbon::today())->sum('total_price');
+        $todaySales = (clone $baseQuery)->whereDate('created_at', Carbon::today())->sum('total_price');
 
         // دریافت لیست‌های مورد نیاز برای فیلترها
         $customers = Person::whereHas('sales')->get();
