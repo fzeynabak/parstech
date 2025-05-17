@@ -2,26 +2,46 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
-        'name', 'code', 'category_id', 'brand_id', 'unit', 'stock', 'min_stock',
-        'weight', 'buy_price', 'sell_price', 'discount', 'barcode', 'store_barcode',
-        'short_desc', 'description', 'image', 'video'
+        'name',
+        'code',
+        'category_id',
+        'brand_id',
+        'image',
+        'gallery',
+        'video',
+        'short_desc',
+        'description',
+        'stock',
+        'min_stock',
+        'unit',
+        'barcode',
+        'is_active'
+    ];
+
+    protected $casts = [
+        'gallery' => 'array',
+        'is_active' => 'boolean',
+        'stock' => 'integer',
+        'min_stock' => 'integer'
     ];
 
     public function category()
     {
-        return $this->belongsTo(Category::class, 'category_id');
+        return $this->belongsTo(Category::class);
     }
 
     public function brand()
     {
-        return $this->belongsTo(Brand::class, 'brand_id');
+        return $this->belongsTo(Brand::class);
+    }
+
+    public function saleItems()
+    {
+        return $this->hasMany(SaleItem::class);
     }
 }

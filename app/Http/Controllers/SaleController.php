@@ -122,14 +122,13 @@ class SaleController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'invoice_number' => 'required|unique:sales,invoice_number',
+            // شماره فاکتور دیگر نباید از کاربر گرفته شود؛ به صورت اتوماتیک تولید می‌شود
+            // 'invoice_number' => 'required|unique:sales,invoice_number',
             'customer_id' => 'required|exists:persons,id',
             'seller_id' => 'required|exists:sellers,id',
             'currency_id' => 'required|exists:currencies,id',
             'products_input' => 'required',
         ], [
-            'invoice_number.required' => 'شماره فاکتور الزامی است.',
-            'invoice_number.unique' => 'این شماره فاکتور قبلاً ثبت شده است.',
             'customer_id.required' => 'انتخاب مشتری الزامی است.',
             'seller_id.required' => 'انتخاب فروشنده الزامی است.',
             'currency_id.required' => 'انتخاب واحد پول الزامی است.',
@@ -143,7 +142,6 @@ class SaleController extends Controller
 
         DB::beginTransaction();
         try {
-            // محاسبه مبلغ کل فاکتور
             $totalPrice = 0;
             $totalDiscount = 0;
             $totalTax = 0;
@@ -162,7 +160,6 @@ class SaleController extends Controller
                 $totalDiscount += $itemDiscount;
                 $totalTax += $itemTax;
 
-                // کم کردن موجودی محصول
                 $product = Product::find($item['id']);
                 if ($product && $product->type === 'product') {
                     if($product->stock < $count) {
@@ -173,9 +170,11 @@ class SaleController extends Controller
                 }
             }
 
-            // ایجاد فاکتور
+            // شماره فاکتور اتوماتیک و غیرتکراری
+            $invoice_number = $this->generateNextInvoiceNumber();
+
             $sale = Sale::create([
-                'invoice_number' => $request->invoice_number,
+                'invoice_number' => $invoice_number,
                 'reference' => $request->reference,
                 'customer_id' => $request->customer_id,
                 'seller_id' => $request->seller_id,
@@ -188,7 +187,6 @@ class SaleController extends Controller
                 'status' => 'pending'
             ]);
 
-            // ذخیره اقلام فاکتور
             foreach ($items as $item) {
                 $count = intval($item['count']);
                 $unitPrice = intval($item['sell_price']);
@@ -586,16 +584,16 @@ class SaleController extends Controller
 
     protected function generateNextInvoiceNumber()
     {
-        $lastSale = Sale::where('invoice_number', 'like', 'INV-%')
-                       ->orderByRaw('CAST(SUBSTRING(invoice_number, 5) AS UNSIGNED) DESC')
-                       ->first();
+        $lastSale = Sale::where('invoice_number', 'like', 'invoices-%')
+            ->orderByRaw('CAST(SUBSTRING(invoice_number, 10) AS UNSIGNED) DESC')
+            ->first();
 
-        if ($lastSale && preg_match('/INV-(\d+)/', $lastSale->invoice_number, $matches)) {
+        if ($lastSale && preg_match('/invoices-(\d+)/', $lastSale->invoice_number, $matches)) {
             $number = intval($matches[1]) + 1;
         } else {
-            $number = 1001;
+            $number = 10001;
         }
 
-        return 'INV-' . $number;
+        return 'invoices-' . $number;
     }
 }

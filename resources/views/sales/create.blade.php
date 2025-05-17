@@ -4,7 +4,9 @@
     <link rel="stylesheet" href="{{ asset('css/persian-datepicker.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/persianDatepicker-melon.css') }}">
     <link rel="stylesheet" href="{{ asset('css/sales-invoice.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/sales-create.css') }}">
     <style>
+        /* Quick Fixes - برای حفظ سازگاری با کدهای قبلی */
         .form-switch .slider {
             display: inline-block;
             width: 38px;
@@ -15,7 +17,7 @@
             transition: background 0.2s;
         }
         .form-switch input[type=checkbox] { display: none; }
-        .form-switch input[type=checkbox]:checked + .slider { background: #4caf50; }
+        .form-switch input[type=checkbox]:checked + .slider { background: var(--success-color); }
         .form-switch .slider:before {
             content: "";
             position: absolute;
@@ -32,105 +34,158 @@
 @endsection
 
 @section('content')
-<div class="sales-invoice-container">
-    <div class="sales-invoice-header d-flex align-items-center justify-content-between mb-3">
-        <h2 class="mb-0"><i class="fa fa-file-invoice-dollar ms-2"></i> فاکتور فروش</h2>
+<div class="sales-create-container">
+    <div class="sales-create-header animate-fade-in">
+        <h2><i class="fa fa-file-invoice-dollar"></i> فاکتور فروش جدید</h2>
     </div>
 
     @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
+        <div class="alert alert-success animate-fade-in">{{ session('success') }}</div>
     @endif
     @if($errors->any())
-        <div class="alert alert-danger">{{ implode('، ', $errors->all()) }}</div>
+        <div class="alert alert-danger animate-fade-in">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
     @endif
 
-    <form id="sales-invoice-form" class="row g-3" autocomplete="off" method="POST" action="{{ route('sales.store') }}">
+    <form id="sales-invoice-form" class="animate-fade-in" autocomplete="off" method="POST" action="{{ route('sales.store') }}">
         @csrf
 
-        <div class="row g-2 mb-2">
-            <div class="col-md-2">
-                <label>شماره</label>
-                <div class="input-group">
-                    <input type="text" class="form-control" name="invoice_number" id="invoice_number" value="{{ old('invoice_number', $nextNumber ?? '') }}" readonly required>
-                    <span class="input-group-text bg-white border-0">
-                        <label class="form-switch m-0" style="cursor:pointer;">
-                            <input type="checkbox" id="invoiceNumberSwitch" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </span>
+        <!-- بخش اول: اطلاعات اولیه فاکتور -->
+        <div class="invoice-section">
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label class="form-label required">شماره فاکتور</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="invoice_number" id="invoice_number"
+                                   value="{{ old('invoice_number', $nextNumber ?? '') }}" readonly required>
+                            <span class="input-group-text">
+                                <label class="form-switch mb-0">
+                                    <input type="checkbox" id="invoiceNumberSwitch" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </span>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-2">
-                <label>ارجاع</label>
-                <input type="text" class="form-control" name="reference" id="reference" value="{{ old('reference') }}">
-            </div>
-            <div class="col-md-3">
-                <label>تاریخ صدور</label>
-                <div class="input-group">
-                    <input type="text" class="form-control" name="issued_at_jalali" id="issued_at_jalali" value="{{ old('issued_at_jalali') }}" readonly autocomplete="off">
+
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label class="form-label">شماره ارجاع</label>
+                        <input type="text" class="form-control" name="reference" id="reference"
+                               value="{{ old('reference') }}" placeholder="شماره ارجاع...">
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-2">
-                <label>واحد پول</label>
-                <select class="form-select" name="currency_id" id="currency_id" required>
-                    <option value="">انتخاب کنید...</option>
-                    @foreach($currencies as $currency)
-                        <option value="{{ $currency->id }}" {{ old('currency_id') == $currency->id ? 'selected' : '' }}>
-                            {{ $currency->name }} - {{ $currency->code }}
-                        </option>
-                    @endforeach
-                </select>
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label required">تاریخ صدور</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="issued_at_jalali" id="issued_at_jalali"
+                                   value="{{ old('issued_at_jalali') }}" readonly>
+                            <span class="input-group-text">
+                                <i class="fa fa-calendar"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label class="form-label required">واحد پول</label>
+                        <select class="form-select" name="currency_id" id="currency_id" required>
+                            <option value="">انتخاب کنید...</option>
+                            @foreach($currencies as $currency)
+                                <option value="{{ $currency->id }}" {{ old('currency_id') == $currency->id ? 'selected' : '' }}>
+                                    {{ $currency->name }} - {{ $currency->code }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="row g-2 mb-3">
-            <div class="col-md-3">
-                <label>مشتری <span class="text-danger">*</span></label>
-                <div class="input-group">
-                    <input type="text" class="form-control" id="customer_search" placeholder="انتخاب کنید..." value="{{ old('customer_name') }}">
-                    <input type="hidden" name="customer_id" id="customer_id" value="{{ old('customer_id') }}" required>
-                    <button type="button" class="btn btn-outline-success" id="addCustomerBtn"><i class="fa fa-plus"></i></button>
+        <!-- بخش دوم: اطلاعات مشتری و فروشنده -->
+        <div class="invoice-section mt-4">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label required">مشتری</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="customer_search"
+                                   placeholder="جستجوی مشتری..." value="{{ old('customer_name') }}">
+                            <input type="hidden" name="customer_id" id="customer_id" value="{{ old('customer_id') }}" required>
+                            <button type="button" class="btn btn-success" id="addCustomerBtn">
+                                <i class="fa fa-plus"></i>
+                            </button>
+                        </div>
+                        <div id="customer-search-results" class="dropdown-menu w-100"></div>
+                    </div>
                 </div>
-                <div class="dropdown-menu" id="customer-search-results" style="width:100%"></div>
-            </div>
-            <div class="col-md-3">
-                <label>عنوان</label>
-                <input type="text" class="form-control" name="title" id="invoice_title" placeholder="عنوان..." value="{{ old('title') }}">
-            </div>
-            <div class="col-md-3">
-                <label>فروشنده <span class="text-danger">*</span></label>
-                <select class="form-select" name="seller_id" id="seller_id" required>
-                    <option value="">انتخاب کنید...</option>
-                    @foreach($sellers as $seller)
-                        <option value="{{ $seller->id }}" {{ old('seller_id') == $seller->id ? 'selected' : '' }}>
-                            {{ $seller->seller_code }} - {{ $seller->first_name }} {{ $seller->last_name }}
-                        </option>
-                    @endforeach
-                </select>
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label">عنوان فاکتور</label>
+                        <input type="text" class="form-control" name="title" id="invoice_title"
+                               placeholder="عنوان فاکتور..." value="{{ old('title') }}">
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label required">فروشنده</label>
+                        <select class="form-select" name="seller_id" id="seller_id" required>
+                            <option value="">انتخاب کنید...</option>
+                            @foreach($sellers as $seller)
+                                <option value="{{ $seller->id }}" {{ old('seller_id') == $seller->id ? 'selected' : '' }}>
+                                    {{ $seller->seller_code }} - {{ $seller->first_name }} {{ $seller->last_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="row">
-            <div class="col-12">
-                @include('sales.partials.product_list')
-            </div>
+        <!-- بخش سوم: محصولات و خدمات -->
+        <div class="invoice-section mt-4">
+            @include('sales.partials.product_list')
         </div>
 
-        <div class="row mt-3">
-            <div class="col-12">
-                @include('sales.partials.invoice_items_table')
-            </div>
+        <!-- بخش چهارم: جدول اقلام فاکتور -->
+        <div class="invoice-section mt-4">
+            @include('sales.partials.invoice_items_table')
         </div>
 
         <input type="hidden" name="products_input" id="products_input" value="{{ old('products_input') }}">
 
-        <div class="row align-items-center mt-4">
-            <div class="col-md-9 text-end">
-                <div>تعداد کل: <span id="total_count">۰</span></div>
-                <div>مبلغ کل: <span id="total_amount">۰ ریال</span></div>
-            </div>
-            <div class="col-md-3 text-end">
-                <button type="submit" class="btn btn-primary btn-lg px-4 shadow-sm"><i class="fa fa-check ms-2"></i> ثبت فاکتور فروش</button>
+        <!-- بخش پنجم: جمع کل و دکمه ثبت -->
+        <div class="invoice-footer mt-4">
+            <div class="row align-items-center">
+                <div class="col-md-9">
+                    <div class="invoice-totals">
+                        <div class="total-item">
+                            <div class="total-label">تعداد کل:</div>
+                            <div class="total-value" id="total_count">۰</div>
+                        </div>
+                        <div class="total-item">
+                            <div class="total-label">مبلغ کل:</div>
+                            <div class="total-value grand-total" id="total_amount">۰ ریال</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 text-end">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fa fa-check"></i>
+                        ثبت فاکتور فروش
+                    </button>
+                </div>
             </div>
         </div>
     </form>
@@ -145,7 +200,7 @@
     <script src="{{ asset('js/sales-invoice.js') }}"></script>
     <script>
     $(function() {
-        // مقداردهی فقط برای نمایش (سمت سرور ثبت نمی‌شود!)
+        // تاریخ فاکتور
         if (typeof persianDate !== "undefined") {
             var now = new persianDate();
             var jalali = now.format('YYYY/MM/DD');

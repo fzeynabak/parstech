@@ -33,6 +33,8 @@ use App\Http\Controllers\Api\CategoryApiController;
 use App\Http\Controllers\Api\ProductApiController;
 use App\Http\Controllers\Api\ServiceApiController;
 
+
+
 Route::get('sales/{sale}/print', [SaleController::class, 'print'])->name('sales.print');
 
 
@@ -68,6 +70,7 @@ Route::post('/register', [RegisterController::class, 'register']);
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/api/sales-data/{period}', [DashboardController::class, 'getSalesData']);
 
     // Profile
     Route::prefix('profile')->name('profile.')->group(function () {
