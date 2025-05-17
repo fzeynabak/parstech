@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\Service;
 use App\Models\Category;
 use App\Models\Unit;
-use App\Models\ServiceCategory;
 use Illuminate\Support\Facades\Validator;
 
 class ServiceController extends Controller
@@ -16,32 +15,30 @@ class ServiceController extends Controller
      */
     public function index()
     {
-
         $serviceCategories = Category::where('category_type', 'service')->get();
         $services = Service::latest()->paginate(20);
-        return view('services.index', compact('services'));
+        return view('services.index', compact('services', 'serviceCategories'));
     }
-    protected $fillable = ['name'];
+
     public function nextCode()
     {
-        $last = Service::where('code', 'like', 'ser%')
-            ->orderByRaw('CAST(SUBSTRING(code, 4) AS UNSIGNED) DESC')
+        $last = Service::where('service_code', 'like', 'ser%')
+            ->orderByRaw('CAST(SUBSTRING(service_code, 4) AS UNSIGNED) DESC')
             ->first();
-        if($last && preg_match('/^ser(\d+)$/', $last->code, $m)) {
+        if($last && preg_match('/^ser(\d+)$/', $last->service_code, $m)) {
             $next = intval($m[1]) + 1;
         } else {
             $next = 10001;
         }
         return response()->json(['code' => 'ser' . $next]);
     }
+
     /**
      * نمایش فرم افزودن خدمت جدید
      */
     public function create()
     {
         $serviceCategories = Category::where('category_type', 'service')->get();
-
-        // فرض می‌کنیم جدول units به صورت جداگانه داری، در غیر این صورت لیست ثابت
         $units = Service::select('unit')->distinct()->pluck('unit')->toArray();
         if (empty($units)) {
             $units = ['ساعت', 'روز', 'عدد'];
@@ -57,7 +54,7 @@ class ServiceController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'service_code' => 'required|string|max:255|unique:services,service_code',
-            'service_category_id' => 'nullable|exists:service_categories,id',
+            'service_category_id' => 'nullable|exists:categories,id',
             'unit' => 'nullable|string|max:255',
             'price' => 'nullable|numeric',
             'tax' => 'nullable|numeric',
@@ -105,16 +102,16 @@ class ServiceController extends Controller
         $service = Service::findOrFail($id);
 
         $request->validate([
-            'name'        => 'required|string|max:255',
-            'code'        => 'required|string|max:255|unique:services,code,' . $service->id,
-            'category_id' => 'required|exists:categories,id',
+            'title'        => 'required|string|max:255',
+            'service_code' => 'required|string|max:255|unique:services,service_code,' . $service->id,
+            'service_category_id' => 'nullable|exists:categories,id',
             'unit'        => 'nullable|string|max:255',
             'price'       => 'nullable|numeric',
             'is_active'   => 'nullable|boolean',
         ]);
 
         $data = $request->only([
-            'name', 'code', 'category_id', 'unit', 'price', 'is_active'
+            'title', 'service_code', 'service_category_id', 'unit', 'price', 'is_active'
         ]);
         if (!isset($data['is_active'])) $data['is_active'] = true;
 
@@ -131,67 +128,5 @@ class ServiceController extends Controller
         $service = Service::findOrFail($id);
         $service->delete();
         return redirect()->route('services.index')->with('success', 'خدمت با موفقیت حذف شد.');
-    }
-
-    /**
-     * Ajax list for services with category filter and search.
-     * Route: /services/ajax-list
-     */
-    public function ajaxList(Request $request)
-    {
-        $query = Service::with('category')
-            ->whereHas('category', function($q) {
-                $q->where('category_type', 'service');
-            });
-
-        if ($request->filled('q')) {
-            $search = $request->input('q');
-            $query->where(function($q) use ($search){
-                $q->where('name', 'like', "%$search%")
-                  ->orWhere('code', 'like', "%$search%");
-            });
-        }
-
-        $services = $query->limit($request->input('limit', 10))->get();
-
-        $data = $services->map(function($item){
-            return [
-                'id' => $item->id,
-                'code' => $item->code,
-                'name' => $item->name,
-                'image' => $item->image ?? null,
-                'stock' => $item->stock ?? null,
-                'sell_price' => $item->price ?? null,
-                'category' => $item->category->name ?? '-',
-                'category_type' => $item->category->category_type ?? '-',
-            ];
-        });
-        return response()->json($data);
-    }
-
-    /**
-     * دریافت اطلاعات یک خدمت (برای افزودن به سبد خرید)
-     * Route: /sales/item-info?id=...&type=service
-     */
-    public function itemInfo(Request $request)
-    {
-        $id = $request->input('id');
-        $service = Service::with('category')->where('id', $id)
-            ->whereHas('category', function($q) {
-                $q->where('category_type', 'service');
-            })
-            ->firstOrFail();
-
-        return response()->json([
-            'id' => $service->id,
-            'code' => $service->code,
-            'name' => $service->name,
-            'image' => $service->image ?? null,
-            'stock' => $service->stock ?? null,
-            'sell_price' => $service->price ?? null,
-            'category' => $service->category->name ?? '-',
-            'category_type' => $service->category->category_type ?? '-',
-            'unit' => $service->unit ?? '-',
-        ]);
     }
 }
