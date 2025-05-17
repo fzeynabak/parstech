@@ -1,3 +1,6 @@
+@php
+use Hekmatinasser\Verta\Verta;
+@endphp
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>

@@ -704,6 +704,7 @@ class ComposerStaticInit88970a0117c062eed55fa8728fc43833
         'App\\Http\\Controllers\\LandingController' => __DIR__ . '/../..' . '/app/Http/Controllers/LandingController.php',
         'App\\Http\\Controllers\\PersonController' => __DIR__ . '/../..' . '/app/Http/Controllers/PersonController.php',
         'App\\Http\\Controllers\\PreInvoiceController' => __DIR__ . '/../..' . '/app/Http/Controllers/PreInvoiceController.php',
+        'App\\Http\\Controllers\\PrintController' => __DIR__ . '/../..' . '/app/Http/Controllers/PrintController.php',
         'App\\Http\\Controllers\\ProductController' => __DIR__ . '/../..' . '/app/Http/Controllers/ProductController.php',
         'App\\Http\\Controllers\\ProfileController' => __DIR__ . '/../..' . '/app/Http/Controllers/ProfileController.php',
         'App\\Http\\Controllers\\ProvinceController' => __DIR__ . '/../..' . '/app/Http/Controllers/ProvinceController.php',
