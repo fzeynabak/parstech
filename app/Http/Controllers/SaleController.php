@@ -101,26 +101,26 @@ class SaleController extends Controller
         ));
     }
 
-public function create()
-{
-    $sellers = Seller::all();
-    $products = Product::with('category')->get();
-    $services = \App\Models\Service::with('category')->get(); // اضافه کن
-    $currencies = Currency::all();
-    $customers = Person::all();
+    public function create()
+    {
+        $sellers = \App\Models\Seller::all();
+        $products = \App\Models\Product::with('category')->get();
+        $services = \App\Models\Service::with('category')->get();
+        $currencies = \App\Models\Currency::all();
+        $customers = \App\Models\Person::all();
 
-    // شماره پیشنهادی
-    $nextNumber = $this->generateNextInvoiceNumber();
+        // شماره پیشنهادی برای فاکتور جدید
+        $nextNumber = $this->generateNextInvoiceNumber();
 
-    return view('sales.create', compact(
-        'sellers',
-        'products',
-        'services',   // اضافه کن
-        'currencies',
-        'customers',
-        'nextNumber'
-    ));
-}
+        return view('sales.create', compact(
+            'sellers',
+            'products',
+            'services',
+            'currencies',
+            'customers',
+            'nextNumber'
+        ));
+    }
 
     public function store(Request $request)
 {

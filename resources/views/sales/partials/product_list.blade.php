@@ -12,7 +12,22 @@
             @include('sales.partials.product_list_inner', ['type' => 'product'])
         </div>
         <div class="tab-pane fade" id="services-pane" role="tabpanel">
-            @include('sales.partials.product_list_inner', ['type' => 'service'])
+            <ul class="nav nav-tabs" id="productServiceTab" role="tablist">
+                <li class="nav-item">
+                  <a class="nav-link active" id="product-tab" data-toggle="tab" href="#product_list" role="tab">محصولات</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" id="service-tab" data-toggle="tab" href="#service_list" role="tab">خدمات</a>
+                </li>
+              </ul>
+              <div class="tab-content" id="productServiceTabContent">
+                <div class="tab-pane fade show active" id="product_list" role="tabpanel">
+                  @include('sales.partials.product_list')
+                </div>
+                <div class="tab-pane fade" id="service_list" role="tabpanel">
+                  @include('sales.partials.service_list')
+                </div>
+              </div>
         </div>
     </div>
 </div>
