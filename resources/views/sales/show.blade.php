@@ -177,25 +177,25 @@
                                 @endif
                             </div>
                         </td>
-                        <td class="text-center farsi-number">{{ number_format($item->quantity, 2) }}</td>
+                        <td class="text-center farsi-number">{{ number_format($item->quantity) }}</td>
                         <td class="text-center">{{ $item->unit ?: 'عدد' }}</td>
-                        <td class="text-center farsi-number" data-type="money">{{ number_format($item->unit_price, 2) }}</td>
+                        <td class="text-center farsi-number" data-type="money">{{ number_format($item->unit_price) }}</td>
                         <td class="text-center">
                             @if($row_discount > 0)
-                                <span class="text-danger farsi-number" data-type="money">{{ number_format($row_discount, 2) }}</span>
+                                <span class="text-danger farsi-number" data-type="money">{{ number_format($row_discount) }}</span>
                             @else
                                 <span class="text-muted">-</span>
                             @endif
                         </td>
                         <td class="text-center">
                             @if($row_tax > 0)
-                                <span class="text-info farsi-number" data-type="money">{{ number_format($row_tax, 2) }}</span>
+                                <span class="text-info farsi-number" data-type="money">{{ number_format($row_tax) }}</span>
                             @else
                                 <span class="text-muted">-</span>
                             @endif
                         </td>
                         <td class="text-center farsi-number" data-type="money">
-                            {{ number_format($row_total_price, 2) }}
+                            {{ number_format($row_total_price) }}
                         </td>
                     </tr>
                     @empty
@@ -226,27 +226,27 @@
             <div class="summary-list">
                 <div class="summary-item">
                     <span class="summary-label">جمع کل:</span>
-                    <span class="summary-value farsi-number">{{ number_format($sum_total, 2) }}</span>
+                    <span class="summary-value farsi-number">{{ number_format($sum_total) }}</span>
                 </div>
                 <div class="summary-item">
                     <span class="summary-label">تخفیف:</span>
-                    <span class="summary-value text-danger farsi-number">{{ number_format($sum_discount, 2) }}</span>
+                    <span class="summary-value text-danger farsi-number">{{ number_format($sum_discount) }}</span>
                 </div>
                 <div class="summary-item">
                     <span class="summary-label">مالیات:</span>
-                    <span class="summary-value text-info farsi-number">{{ number_format($sum_tax, 2) }}</span>
+                    <span class="summary-value text-info farsi-number">{{ number_format($sum_tax) }}</span>
                 </div>
                 <div class="summary-item">
                     <span class="summary-label">مبلغ پرداخت شده:</span>
-                    <span class="summary-value text-success farsi-number">{{ number_format($paid_amount, 2) }}</span>
+                    <span class="summary-value text-success farsi-number">{{ number_format($paid_amount) }}</span>
                 </div>
                 <div class="summary-item">
                     <span class="summary-label">مبلغ باقیمانده:</span>
-                    <span class="summary-value text-danger farsi-number">{{ number_format($remaining_amount, 2) }}</span>
+                    <span class="summary-value text-danger farsi-number">{{ number_format($remaining_amount) }}</span>
                 </div>
                 <div class="summary-total">
                     <span>مبلغ نهایی:</span>
-                    <span class="farsi-number">{{ number_format($final_amount, 2) }}</span>
+                    <span class="farsi-number">{{ number_format($final_amount) }}</span>
                 </div>
             </div>
         </div>
@@ -398,5 +398,12 @@
     }
     window.addEventListener('DOMContentLoaded', convertAllNumbersToFa);
     // اگر ajax داشتی یا بعد از فرم نیاز شد، دوباره convertAllNumbersToFa() اجرا شود
+    // تابع مدیریت پرینت
+    const InvoiceManager = {
+        printInvoice() {
+            window.location.href = "{{ route('sales.print', $sale) }}";
+        }
+    };
+
 </script>
 @endsection

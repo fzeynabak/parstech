@@ -34,12 +34,23 @@ class Sale extends Model
     protected $casts = [
         'issued_at' => 'datetime',
         'paid_at' => 'datetime',
-        'total_price' => 'decimal:2',
-        'discount' => 'decimal:2',
-        'tax' => 'decimal:2',
-        'final_amount' => 'decimal:2',
-        'paid_amount' => 'decimal:2',
-        'remaining_amount' => 'decimal:2'
+        'cash_paid_at' => 'datetime',
+        'card_paid_at' => 'datetime',
+        'pos_paid_at' => 'datetime',
+        'online_paid_at' => 'datetime',
+        'cheque_received_at' => 'datetime',
+        'cheque_due_date' => 'date',
+        'total_price' => 'integer',
+        'discount' => 'integer',
+        'tax' => 'integer',
+        'final_amount' => 'integer',
+        'paid_amount' => 'integer',
+        'remaining_amount' => 'integer',
+        'cash_amount' => 'integer',
+        'card_amount' => 'integer',
+        'pos_amount' => 'integer',
+        'online_amount' => 'integer',
+        'cheque_amount' => 'integer'
     ];
 
     protected $appends = ['formatted_date', 'payment_status'];

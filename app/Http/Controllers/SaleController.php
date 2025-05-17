@@ -14,6 +14,11 @@ use Carbon\Carbon;
 
 class SaleController extends Controller
 {
+    public function print(Sale $sale)
+{
+    $sale->load(['customer', 'seller', 'items.product']);
+    return view('sales.print', compact('sale'));
+}
     public function index(Request $request)
     {
         $query = Sale::with(['seller', 'customer', 'items.product', 'currency']);
@@ -388,53 +393,92 @@ class SaleController extends Controller
 
         DB::beginTransaction();
         try {
+            // مبلغ نهایی (final_amount)
+            $finalAmount = $sale->total_price - $sale->discount + $sale->tax;
+
             // جمع کل پرداخت جدید
-            $paidAmount = 0;
+            $totalPaidAmount = $sale->paid_amount ?: 0; // پرداختی‌های قبلی
 
-            // ثبت مبلغ هر روش پرداخت (قابلیت ویرایش!)
-            $sale->cash_amount     = floatval($request->cash_amount)     ?: 0;
-            $sale->card_amount     = floatval($request->card_amount)     ?: 0;
-            $sale->pos_amount      = floatval($request->pos_amount)      ?: 0;
-            $sale->online_amount   = floatval($request->online_amount)   ?: 0;
-            $sale->cheque_amount   = floatval($request->cheque_amount)   ?: 0;
+            switch($request->payment_method) {
+                case 'cash':
+                    $totalPaidAmount += intval($request->cash_amount);
+                    $sale->cash_amount = intval($request->cash_amount);
+                    $sale->cash_reference = $request->cash_reference;
+                    $sale->cash_paid_at = now();
+                    break;
 
-            // مجموع پرداخت‌ها
-            $paidAmount = $sale->cash_amount + $sale->card_amount + $sale->pos_amount + $sale->online_amount + $sale->cheque_amount;
+                case 'card':
+                    $totalPaidAmount += intval($request->card_amount);
+                    $sale->card_amount = intval($request->card_amount);
+                    $sale->card_number = $request->card_number;
+                    $sale->card_bank = $request->card_bank;
+                    $sale->card_reference = $request->card_reference;
+                    $sale->card_paid_at = now();
+                    break;
 
-            // اگر multi بود، مقادیر multi را جایگزین کن
-            if ($request->payment_method === 'multi') {
-                $sale->cash_amount     = floatval($request->multi_cash_amount)   ?: 0;
-                $sale->card_amount     = floatval($request->multi_card_amount)   ?: 0;
-                $sale->cheque_amount   = floatval($request->multi_cheque_amount) ?: 0;
+                case 'pos':
+                    $totalPaidAmount += intval($request->pos_amount);
+                    $sale->pos_amount = intval($request->pos_amount);
+                    $sale->pos_terminal = $request->pos_terminal;
+                    $sale->pos_reference = $request->pos_reference;
+                    $sale->pos_paid_at = now();
+                    break;
 
-                $paidAmount = $sale->cash_amount + $sale->card_amount + $sale->cheque_amount;
+                case 'online':
+                    $totalPaidAmount += intval($request->online_amount);
+                    $sale->online_amount = intval($request->online_amount);
+                    $sale->online_transaction_id = $request->online_transaction_id;
+                    $sale->online_reference = $request->online_reference;
+                    $sale->online_paid_at = now();
+                    break;
+
+                case 'cheque':
+                    $totalPaidAmount += intval($request->cheque_amount);
+                    $sale->cheque_amount = intval($request->cheque_amount);
+                    $sale->cheque_number = $request->cheque_number;
+                    $sale->cheque_bank = $request->cheque_bank;
+                    $sale->cheque_due_date = $request->cheque_due_date;
+                    $sale->cheque_status = 'pending';
+                    $sale->cheque_received_at = now();
+                    break;
+
+                case 'multi':
+                    if($request->has('multi_cash_amount')) {
+                        $totalPaidAmount += intval($request->multi_cash_amount);
+                        $sale->cash_amount = intval($request->multi_cash_amount);
+                        $sale->cash_reference = $request->multi_cash_reference;
+                        $sale->cash_paid_at = now();
+                    }
+
+                    if($request->has('multi_card_amount')) {
+                        $totalPaidAmount += intval($request->multi_card_amount);
+                        $sale->card_amount = intval($request->multi_card_amount);
+                        $sale->card_number = $request->multi_card_number;
+                        $sale->card_bank = $request->multi_card_bank;
+                        $sale->card_reference = $request->multi_card_reference;
+                        $sale->card_paid_at = now();
+                    }
+
+                    if($request->has('multi_cheque_amount')) {
+                        $totalPaidAmount += intval($request->multi_cheque_amount);
+                        $sale->cheque_amount = intval($request->multi_cheque_amount);
+                        $sale->cheque_number = $request->multi_cheque_number;
+                        $sale->cheque_bank = $request->multi_cheque_bank;
+                        $sale->cheque_due_date = $request->multi_cheque_due_date;
+                        $sale->cheque_status = 'pending';
+                        $sale->cheque_received_at = now();
+                    }
+                    break;
             }
 
-            // سایر فیلدها
-            $sale->cash_reference      = $request->cash_reference;
-            $sale->card_number         = $request->card_number;
-            $sale->card_bank           = $request->card_bank;
-            $sale->card_reference      = $request->card_reference;
-            $sale->pos_terminal        = $request->pos_terminal;
-            $sale->pos_reference       = $request->pos_reference;
-            $sale->online_transaction_id = $request->online_transaction_id;
-            $sale->cheque_number       = $request->cheque_number;
-            $sale->cheque_bank         = $request->cheque_bank;
-            $sale->cheque_due_date     = $request->cheque_due_date;
-
-            $sale->payment_method      = $request->payment_method;
-            $sale->payment_notes       = $request->payment_notes;
-
-            // مبلغ نهایی (final_amount): فرمول صحیح
-            $finalAmount = $sale->total_price - $sale->discount + $sale->tax;
+            // به‌روزرسانی مقادیر اصلی
             $sale->final_amount = $finalAmount;
+            $sale->paid_amount = $totalPaidAmount;
+            $sale->remaining_amount = $finalAmount - $totalPaidAmount;
 
-            // ثبت پرداخت (ویرایشی)
-            $sale->paid_amount = $paidAmount;
-
-            // محاسبه مانده حساب
-            $sale->remaining_amount = $finalAmount - $sale->paid_amount;
-            if ($sale->remaining_amount < 0) $sale->remaining_amount = 0;
+            if ($sale->remaining_amount < 0) {
+                $sale->remaining_amount = 0;
+            }
 
             // وضعیت پرداخت
             if ($sale->remaining_amount == 0) {
@@ -442,13 +486,15 @@ class SaleController extends Controller
                 $sale->paid_at = now();
             } else {
                 $sale->status = 'pending';
-                $sale->paid_at = null;
             }
+
+            $sale->payment_method = $request->payment_method;
+            $sale->payment_notes = $request->payment_notes;
 
             $sale->save();
 
             DB::commit();
-            return redirect()->route('sales.show', $sale)->with('success', 'پرداخت با موفقیت ثبت و قابل ویرایش شد.');
+            return redirect()->route('sales.show', $sale)->with('success', 'پرداخت با موفقیت ثبت شد.');
         } catch (\Exception $ex) {
             DB::rollBack();
             return back()->with('error', 'خطا در ثبت پرداخت: ' . $ex->getMessage());
