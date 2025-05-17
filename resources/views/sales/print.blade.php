@@ -23,7 +23,10 @@
                     <div class="invoice-date">تاریخ: {{ jdate($sale->created_at)->format('Y/m/d') }}</div>
                 </div>
             </div>
-            <div id="invoice-qr" class="qr-code"></div>
+            <div id="invoice-qr" class="qr-code">
+
+                {!! QrCode::size(100)->generate(url('/sales/'.$sale->id)) !!}
+            </div>
         </header>
 
         <!-- Party Information -->
