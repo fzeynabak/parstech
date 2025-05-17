@@ -33,7 +33,7 @@ use App\Http\Controllers\Api\CategoryApiController;
 use App\Http\Controllers\Api\ProductApiController;
 use App\Http\Controllers\Api\ServiceApiController;
 
-
+Route::get('/services/next-code', [ServiceController::class, 'nextCode']);
 Route::get('sales/{sale}/print', [SaleController::class, 'print'])->name('sales.print');
 
 

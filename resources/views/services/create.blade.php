@@ -12,21 +12,31 @@
             <div class="card-header service-colored" id="service-header">
                 <h5 class="mb-0">افزودن خدمات</h5>
             </div>
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    @foreach ($errors->all() as $error)
+                        <div>{{ $error }}</div>
+                    @endforeach
+                </div>
+            @endif
+            @if(session('success'))
+                <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
             <form id="service-form" action="{{ route('services.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="card-body">
                     <div class="row mb-3">
                         <div class="col-md-5">
                             <label for="title">عنوان خدمات <span class="text-danger">*</span></label>
-                            <input type="text" name="title" id="title" class="form-control" required autofocus>
+                            <input type="text" name="title" id="title" class="form-control" required autofocus value="{{ old('title') }}">
                         </div>
                         <div class="col-md-4">
                             <label for="service_code">کد خدمات</label>
                             <div class="input-group">
-                                <input type="text" name="service_code" id="service_code" class="form-control" readonly>
+                                <input type="text" name="service_code" id="service_code" class="form-control" readonly value="{{ old('service_code') }}">
                                 <div class="input-group-append">
                                     <div class="input-group-text">
-                                        <input type="checkbox" id="custom_code_switch" title="شخصی‌سازی کد">
+                                        <input type="checkbox" id="custom_code_switch" title="شخصی‌سازی کد" {{ old('custom_code_switch') ? 'checked' : '' }}>
                                         <span class="ml-2">کد دستی</span>
                                     </div>
                                 </div>
@@ -37,18 +47,18 @@
                             <select name="service_category_id" id="service_category_id" class="form-control">
                                 <option value="">انتخاب کنید</option>
                                 @foreach($serviceCategories as $cat)
-                                    <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                    <option value="{{ $cat->id }}" {{ old('service_category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
                                 @endforeach
                             </select>
                         </div>
-                    </div>  
+                    </div>
                     <div class="row mb-3 align-items-end">
                        <div class="col-md-3">
                             <label for="unit">واحد</label>
                             <div class="input-group">
                                 <select name="unit" id="unit" class="form-control">
                                     @foreach($units as $unit)
-                                        <option value="{{ $unit }}">{{ $unit }}</option>
+                                        <option value="{{ $unit }}" {{ old('unit') == $unit ? 'selected' : '' }}>{{ $unit }}</option>
                                     @endforeach
                                 </select>
                                 <div class="input-group-append">
@@ -69,21 +79,21 @@
                         </div>
                         <div class="col-md-3">
                             <label for="price">قیمت پایه (ریال)</label>
-                            <input type="number" name="price" id="price" class="form-control" min="0">
+                            <input type="number" name="price" id="price" class="form-control" min="0" value="{{ old('price') }}">
                         </div>
                         <div class="col-md-3">
                             <label for="tax">مالیات (%)</label>
-                            <input type="number" name="tax" id="tax" class="form-control" min="0" max="100">
+                            <input type="number" name="tax" id="tax" class="form-control" min="0" max="100" value="{{ old('tax') }}">
                         </div>
                         <div class="col-md-3">
                             <label for="execution_cost">هزینه اجرا (ریال)</label>
-                            <input type="number" name="execution_cost" id="execution_cost" class="form-control" min="0">
+                            <input type="number" name="execution_cost" id="execution_cost" class="form-control" min="0" value="{{ old('execution_cost') }}">
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="short_description">شرح کوتاه</label>
-                            <input type="text" name="short_description" id="short_description" class="form-control">
+                            <input type="text" name="short_description" id="short_description" class="form-control" value="{{ old('short_description') }}">
                         </div>
                         <div class="col-md-6">
                             <label for="image">تصویر خدمات</label>
@@ -94,24 +104,24 @@
                     <div class="row mb-3">
                         <div class="col-md-12">
                             <label for="description">توضیحات تکمیلی</label>
-                            <textarea name="description" id="description" rows="3" class="form-control"></textarea>
+                            <textarea name="description" id="description" rows="3" class="form-control">{{ old('description') }}</textarea>
                         </div>
                     </div>
                     <div class="row mb-3 align-items-center">
                         <div class="col-md-2">
                             <label for="is_active" class="mr-2">فعال باشد؟</label>
                             <label class="switch">
-                                <input type="checkbox" name="is_active" id="is_active" value="1" checked>
+                                <input type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active', '1') == '1' ? 'checked' : '' }}>
                                 <span class="switch-slider"></span>
                             </label>
                         </div>
                         <div class="col-md-2">
                             <label for="is_vat_included" class="mr-2">شامل مالیات؟</label>
-                            <input type="checkbox" name="is_vat_included" id="is_vat_included" value="1" checked>
+                            <input type="checkbox" name="is_vat_included" id="is_vat_included" value="1" {{ old('is_vat_included', '1') == '1' ? 'checked' : '' }}>
                         </div>
                         <div class="col-md-2">
                             <label for="is_discountable" class="mr-2">قابل تخفیف؟</label>
-                            <input type="checkbox" name="is_discountable" id="is_discountable" value="1" checked>
+                            <input type="checkbox" name="is_discountable" id="is_discountable" value="1" {{ old('is_discountable', '1') == '1' ? 'checked' : '' }}>
                         </div>
                     </div>
                 </div>
@@ -149,4 +159,30 @@
 
 @section('scripts')
 <script src="{{ asset('js/service-create.js') }}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // کد خدمات خودکار (مثلا ser+id بعدی)
+    const serviceCodeInput = document.getElementById('service_code');
+    const customSwitch = document.getElementById('custom_code_switch');
+    if(serviceCodeInput && customSwitch) {
+        function getAutoCode() {
+            fetch("{{ url('/services/next-code') }}")
+                .then(r => r.json())
+                .then(data => {
+                    serviceCodeInput.value = data.code;
+                });
+        }
+        if(!customSwitch.checked) getAutoCode();
+        customSwitch.addEventListener('change', function() {
+            if(this.checked) {
+                serviceCodeInput.removeAttribute('readonly');
+                serviceCodeInput.value = '';
+            } else {
+                serviceCodeInput.setAttribute('readonly', true);
+                getAutoCode();
+            }
+        });
+    }
+});
+</script>
 @endsection

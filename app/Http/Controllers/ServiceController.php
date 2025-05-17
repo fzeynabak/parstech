@@ -14,19 +14,32 @@ class ServiceController extends Controller
      */
     public function index()
     {
-        $services = Service::with('category')->orderBy('id', 'desc')->paginate(20);
+        $services = Service::latest()->paginate(20);
         return view('services.index', compact('services'));
     }
-
+    public function nextCode()
+    {
+        $last = Service::where('service_code', 'like', 'ser%')
+            ->orderByRaw('CAST(SUBSTRING(service_code, 4) AS UNSIGNED) DESC')
+            ->first();
+        if($last && preg_match('/^ser(\d+)$/', $last->service_code, $m)) {
+            $next = intval($m[1]) + 1;
+        } else {
+            $next = 10001;
+        }
+        return response()->json(['code' => 'ser' . $next]);
+    }
     /**
      * نمایش فرم افزودن خدمت جدید
      */
     public function create()
     {
-        $serviceCategories = Category::where('category_type', 'service')->get();
-        $units = Unit::pluck('title')->toArray();
-
-
+        $serviceCategories = ServiceCategory::all();
+        // فرض می‌کنیم جدول units به صورت جداگانه داری، در غیر این صورت لیست ثابت
+        $units = Service::select('unit')->distinct()->pluck('unit')->toArray();
+        if (empty($units)) {
+            $units = ['ساعت', 'روز', 'عدد'];
+        }
         return view('services.create', compact('serviceCategories', 'units'));
     }
 
@@ -35,24 +48,48 @@ class ServiceController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name'        => 'required|string|max:255',
-            'code'        => 'required|string|max:255|unique:services,code',
-            'category_id' => 'required|exists:categories,id',
-            'unit'        => 'nullable|string|max:255',
-            'price'       => 'nullable|numeric',
-            'is_active'   => 'nullable|boolean',
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string|max:255',
+            'service_code' => 'required|string|max:255|unique:services,service_code',
+            'service_category_id' => 'nullable|exists:service_categories,id',
+            'unit' => 'required|string|max:255',
+            'price' => 'nullable|numeric|min:0',
+            'tax' => 'nullable|numeric|min:0|max:100',
+            'execution_cost' => 'nullable|numeric|min:0',
+            'short_description' => 'nullable|string|max:1000',
+            'description' => 'nullable|string',
+            'image' => 'nullable|image|max:2048',
+            'is_active' => 'nullable|boolean',
+            'is_vat_included' => 'nullable|boolean',
+            'is_discountable' => 'nullable|boolean',
         ]);
 
-        $data = $request->only([
-            'name', 'code', 'category_id', 'unit', 'price', 'is_active'
-        ]);
-        // مقداردهی اولیه وضعیت فعال بودن اگر خالی بود
-        if (!isset($data['is_active'])) $data['is_active'] = true;
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
 
-        Service::create($data);
+        $service = new Service();
+        $service->title = $request->title;
+        $service->service_code = $request->service_code;
+        $service->service_category_id = $request->service_category_id;
+        $service->unit = $request->unit;
+        $service->price = $request->price ?: 0;
+        $service->tax = $request->tax ?: 0;
+        $service->execution_cost = $request->execution_cost ?: 0;
+        $service->short_description = $request->short_description;
+        $service->description = $request->description;
+        $service->is_active = $request->has('is_active');
+        $service->is_vat_included = $request->has('is_vat_included');
+        $service->is_discountable = $request->has('is_discountable');
 
-        return redirect()->route('services.index')->with('success', 'خدمت با موفقیت ثبت شد.');
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('services', 'public');
+            $service->image = $path;
+        }
+
+        $service->save();
+
+        return redirect()->route('services.index')->with('success', 'خدمات با موفقیت ثبت شد.');
     }
 
     /**
