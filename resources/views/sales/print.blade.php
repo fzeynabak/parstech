@@ -4,257 +4,204 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>فاکتور {{ $sale->invoice_number }}</title>
-    <style>
-        @font-face {
-            font-family: 'Anjoman';
-            src: url('{{ asset('fonts/Anjoman.ttf') }}') format('truetype');
-        }
-
-        * {
-            font-family: 'Anjoman', tahoma, arial;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            width: 210mm;
-            margin: 0 auto;
-            padding: 20px;
-            background: white;
-        }
-
-        .page {
-            background: white;
-            padding: 20px;
-            position: relative;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .header h1 {
-            font-size: 18px;
-            margin-bottom: 15px;
-            font-weight: 900;
-        }
-
-        .header h2 {
-            font-size: 47px;
-            font-weight: 900;
-            margin-bottom: 20px;
-        }
-
-        .logo {
-            width: 120px;
-            margin: 10px auto;
-        }
-
-        .meta-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 30px;
-            font-size: 10px;
-        }
-
-        .meta-info .right {
-            text-align: right;
-        }
-
-        .meta-info .left {
-            text-align: left;
-        }
-
-        .customer-info {
-            border: 3px solid #000;
-            padding: 15px;
-            margin-bottom: 30px;
-            border-radius: 5px;
-        }
-
-        .customer-info h3 {
-            font-size: 10px;
-            margin-bottom: 10px;
-        }
-
-        .customer-info p {
-            font-size: 10px;
-            margin-bottom: 5px;
-        }
-
-        .products-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-        }
-
-        .products-table th {
-            background-color: #83fee0;
-            padding: 10px;
-            text-align: center;
-            font-size: 14px;
-            font-weight: bold;
-        }
-
-        .products-table td {
-            padding: 10px;
-            text-align: center;
-            font-size: 18px;
-            font-weight: bold;
-            border: 3px solid #000;
-        }
-
-        .products-table .product-name {
-            text-align: right;
-            font-size: 11px;
-            font-weight: normal;
-        }
-
-        .totals {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 40px;
-        }
-
-        .totals .right {
-            width: 60%;
-        }
-
-        .totals .left {
-            width: 35%;
-        }
-
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 14px;
-            font-weight: bold;
-        }
-
-        .about-us {
-            margin-top: 40px;
-            text-align: right;
-        }
-
-        .about-us h3 {
-            font-size: 11px;
-            margin-bottom: 10px;
-            color: #000;
-        }
-
-        .about-us p {
-            font-size: 9px;
-            line-height: 1.5;
-            margin-bottom: 5px;
-        }
-
-        .footer {
-            position: absolute;
-            bottom: 20px;
-            width: calc(100% - 40px);
-            text-align: center;
-        }
-
-        .footer p {
-            margin-bottom: 5px;
-            font-size: 11px;
-        }
-
-        @media print {
-            body {
-                width: 210mm;
-                height: 297mm;
-            }
-            .no-print {
-                display: none;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/invoice-print.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="page">
-        <div class="header">
-            <h1>مرکز خدمات (کامپیوتر،کافی نت، موبایل)</h1>
-            <img src="{{ asset('images/logo.png') }}" alt="لوگو پارس تک" class="logo">
-            <h2>پــارس تـکـ</h2>
-            <h1>فاکتور فروش</h1>
-        </div>
-
-        <div class="meta-info">
-            <div class="right">
-                <p>
-                    <span>شماره:</span>
-                    <span>{{ $sale->invoice_number }}</span>
-                </p>
-                <p>
-                    <span>تاریخ:</span>
-                    <span>{{ jdate($sale->created_at)->format('Y/m/d') }}</span>
-                </p>
-            </div>
-        </div>
-
-        <div class="customer-info">
-            <h3>خریدار/شرکت/سازمان</h3>
-            <p>{{ $sale->customer->full_name }}</p>
-            @if($sale->customer->company_name)
-                <p>{{ $sale->customer->company_name }}</p>
-            @endif
-        </div>
-
-        <table class="products-table">
-            <thead>
-                <tr>
-                    <th style="width: 40%;">مـحـصـولات</th>
-                    <th style="width: 15%;">قیمت (ریال)</th>
-                    <th style="width: 15%;">تعداد</th>
-                    <th style="width: 30%;">جمع کل (ریال)</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($sale->items as $item)
-                <tr>
-                    <td class="product-name">{{ $item->product->title }}</td>
-                    <td>{{ number_format($item->unit_price) }}</td>
-                    <td>{{ number_format($item->quantity) }}</td>
-                    <td>{{ number_format($item->total) }}</td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-
-        <div class="totals">
-            <div class="right">
-                <div class="about-us">
-                    <h3>درباره ما</h3>
-                    <p>مرکز خدمات پارس تک ارائه دهنده خدمات تخصصی کامپیوتر، چاپ و تکثیر، شارژ و فروش کارتریج، طراحی و چاپ بنر، تابلوهای تبلیغاتی و LED</p>
+    <div class="invoice-container">
+        <!-- Header Section -->
+        <header class="invoice-header animate-fade-in">
+            <div class="header-content">
+                <div class="company-info">
+                    <h1 class="company-name">پارس تک</h1>
+                    <div class="company-details">
+                        مرکز خدمات کامپیوتر، کافی نت و موبایل
+                    </div>
+                </div>
+                <div class="invoice-meta">
+                    <div class="invoice-number">شماره فاکتور: {{ $sale->invoice_number }}</div>
+                    <div class="invoice-date">تاریخ: {{ jdate($sale->created_at)->format('Y/m/d') }}</div>
                 </div>
             </div>
-            <div class="left">
-                <div class="total-row">
-                    <span>جمع کل (ریال):</span>
-                    <span>{{ number_format($sale->total_price) }}</span>
+            <div id="invoice-qr" class="qr-code"></div>
+        </header>
+
+        <!-- Party Information -->
+        <section class="party-info">
+            <div class="info-box animate-fade-in">
+                <h3>اطلاعات خریدار</h3>
+                <ul class="info-list">
+                    <li><strong>نام:</strong> {{ $sale->customer->full_name }}</li>
+                    @if($sale->customer->mobile)
+                    <li><strong>موبایل:</strong> {{ $sale->customer->mobile }}</li>
+                    @endif
+                    @if($sale->customer->email)
+                    <li><strong>ایمیل:</strong> {{ $sale->customer->email }}</li>
+                    @endif
+                    @if($sale->customer->address)
+                    <li><strong>آدرس:</strong> {{ $sale->customer->address }}</li>
+                    @endif
+                </ul>
+            </div>
+            <div class="info-box animate-fade-in">
+                <h3>اطلاعات فروشنده</h3>
+                <ul class="info-list">
+                    <li><strong>نام فروشنده:</strong> {{ $sale->seller->full_name }}</li>
+                    <li><strong>کد فروشنده:</strong> {{ $sale->seller->seller_code }}</li>
+                    @if($sale->seller->mobile)
+                    <li><strong>شماره تماس:</strong> {{ $sale->seller->mobile }}</li>
+                    @endif
+                </ul>
+            </div>
+        </section>
+
+        <!-- Items Table -->
+        <section class="items-section animate-fade-in">
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>شرح کالا</th>
+                        <th>تعداد</th>
+                        <th>قیمت واحد (تومان)</th>
+                        <th>تخفیف (تومان)</th>
+                        <th>مالیات</th>
+                        <th>قیمت کل (تومان)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($sale->items as $index => $item)
+                    <tr class="item-row">
+                        <td>{{ $index + 1 }}</td>
+                        <td>{{ $item->product->title }}</td>
+                        <td class="quantity">{{ number_format($item->quantity) }}</td>
+                        <td class="price price-format">{{ number_format($item->unit_price) }}</td>
+                        <td class="discount price-format">{{ number_format($item->discount) }}</td>
+                        <td class="tax price-format">{{ number_format($item->tax) }}</td>
+                        <td class="total price-format">{{ number_format($item->total) }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Payment Information -->
+        <section class="payment-section">
+            <div class="payment-methods animate-fade-in">
+                <h3 class="payment-title">روش‌های پرداخت</h3>
+                <ul class="payment-list">
+                    @if($sale->cash_amount > 0)
+                    <li>
+                        <span class="payment-label">پرداخت نقدی:</span>
+                        <span class="payment-value price-format">{{ number_format($sale->cash_amount) }} تومان</span>
+                    </li>
+                    @endif
+
+                    @if($sale->card_amount > 0)
+                    <li>
+                        <span class="payment-label">کارت به کارت:</span>
+                        <span class="payment-value price-format">{{ number_format($sale->card_amount) }} تومان</span>
+                        @if($sale->card_reference)
+                        <small class="reference-number">شماره پیگیری: {{ $sale->card_reference }}</small>
+                        @endif
+                    </li>
+                    @endif
+
+                    @if($sale->pos_amount > 0)
+                    <li>
+                        <span class="payment-label">کارتخوان:</span>
+                        <span class="payment-value price-format">{{ number_format($sale->pos_amount) }} تومان</span>
+                        @if($sale->pos_reference)
+                        <small class="reference-number">شماره پیگیری: {{ $sale->pos_reference }}</small>
+                        @endif
+                    </li>
+                    @endif
+
+                    @if($sale->cheque_amount > 0)
+                    <li>
+                        <span class="payment-label">چک:</span>
+                        <span class="payment-value price-format">{{ number_format($sale->cheque_amount) }} تومان</span>
+                        @if($sale->cheque_number)
+                        <small class="reference-number">شماره چک: {{ $sale->cheque_number }}</small>
+                        @endif
+                    </li>
+                    @endif
+                </ul>
+            </div>
+
+            <div class="payment-summary animate-fade-in">
+                <h3 class="payment-title">خلاصه مالی</h3>
+                <ul class="payment-list">
+                    <li>
+                        <span class="payment-label">جمع کل:</span>
+                        <span class="payment-value subtotal-amount price-format">{{ number_format($sale->total_price) }}</span>
+                    </li>
+                    <li>
+                        <span class="payment-label">تخفیف:</span>
+                        <span class="payment-value price-format">{{ number_format($sale->discount) }}</span>
+                    </li>
+                    <li>
+                        <span class="payment-label">مالیات:</span>
+                        <span class="payment-value tax-amount price-format">{{ number_format($sale->tax) }}</span>
+                    </li>
+                    <li class="total-row">
+                        <span class="payment-label">مبلغ نهایی:</span>
+                        <span class="payment-value total-amount price-format">{{ number_format($sale->final_amount) }}</span>
+                    </li>
+                    <li>
+                        <span class="payment-label">پرداخت شده:</span>
+                        <span class="payment-value price-format">{{ number_format($sale->paid_amount) }}</span>
+                    </li>
+                    <li>
+                        <span class="payment-label">مانده حساب:</span>
+                        <span class="payment-value price-format">{{ number_format($sale->remaining_amount) }}</span>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="invoice-footer animate-fade-in">
+            <div class="footer-content">
+                <img src="{{ asset('images/logo.png') }}" alt="پارس تک" class="footer-logo">
+                <div class="footer-contacts">
+                    <span class="footer-contact">
+                        <i class="fas fa-phone"></i>
+                        09380074019
+                    </span>
+                    <span class="footer-contact">
+                        <i class="fas fa-envelope"></i>
+                        tepars.ir@gmail.com
+                    </span>
+                    <span class="footer-contact">
+                        <i class="fas fa-globe"></i>
+                        www.tepars.ir
+                    </span>
                 </div>
-                <div class="total-row">
-                    <span>مالیات:</span>
-                    <span>{{ $sale->tax_percent ?? '0.0' }}٪</span>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-telegram"></i></a>
+                    <a href="#"><i class="fab fa-whatsapp"></i></a>
                 </div>
             </div>
-        </div>
-
-        <div class="footer">
-            <p>www.tepars.ir</p>
-            <p>tepars.ir@gmail.com</p>
-            <p>۰۹۳۸۰۰۷۲۰۱۹</p>
-        </div>
+        </footer>
     </div>
 
-    <div class="no-print text-center mt-4">
-        <button onclick="window.print()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+    <!-- Print Button -->
+    <div class="text-center mt-4 mb-4 no-print">
+        <button class="print-button btn btn-primary">
+            <i class="fas fa-print"></i>
             چاپ فاکتور
         </button>
+        <button class="pdf-button btn btn-secondary">
+            <i class="fas fa-file-pdf"></i>
+            دانلود PDF
+        </button>
     </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="{{ asset('js/invoice-print.js') }}"></script>
 </body>
 </html>

@@ -1,0 +1,377 @@
+
+@font-face {
+    font-family: 'Anjoman';
+    src: url('../fonts/AnjomanMax-Regular.ttf');
+}
+/* Main Styles */
+
+
+:root {
+    --primary-color: #2563eb;
+    --secondary-color: #1e40af;
+    --accent-color: #3b82f6;
+    --text-primary: #1f2937;
+    --text-secondary: #4b5563;
+    --background-primary: #ffffff;
+    --background-secondary: #f3f4f6;
+    --border-color: #e5e7eb;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.invoice-container {
+    font-family: 'Anjoman', sans-serif;
+    max-width: 1000px;
+    margin: 2rem auto;
+    background: var(--background-primary);
+    box-shadow: var(--shadow-lg);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.invoice-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.invoice-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('../images/pattern.svg');
+    opacity: 0.1;
+}
+
+.header-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.company-info {
+    text-align: right;
+}
+
+.company-name {
+    font-family: 'AnjomanBold', sans-serif;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.company-details {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.invoice-meta {
+    text-align: left;
+}
+
+.invoice-number {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.invoice-date {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+/* Party Information */
+.party-info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    padding: 2rem;
+    background: var(--background-secondary);
+}
+
+.info-box {
+    background: var(--background-primary);
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+}
+
+.info-box h3 {
+    color: var(--primary-color);
+    font-family: 'AnjomanBold', sans-serif;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.info-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.info-list li {
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.info-list strong {
+    color: var(--text-primary);
+    margin-left: 0.5rem;
+}
+
+/* Items Table */
+.items-section {
+    padding: 2rem;
+}
+
+.items-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-bottom: 2rem;
+}
+
+.items-table th {
+    background: var(--primary-color);
+    color: white;
+    padding: 1rem;
+    text-align: center;
+    font-family: 'AnjomanBold', sans-serif;
+}
+
+.items-table th:first-child {
+    border-radius: 8px 0 0 0;
+}
+
+.items-table th:last-child {
+    border-radius: 0 8px 0 0;
+}
+
+.items-table td {
+    padding: 1rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+.items-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.items-table tbody tr:hover {
+    background: var(--background-secondary);
+}
+
+/* Payment Information */
+.payment-section {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    padding: 2rem;
+    background: var(--background-secondary);
+}
+
+.payment-methods,
+.payment-summary {
+    background: var(--background-primary);
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+}
+
+.payment-title {
+    color: var(--primary-color);
+    font-family: 'AnjomanBold', sans-serif;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.payment-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.payment-list li {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed var(--border-color);
+}
+
+.payment-list li:last-child {
+    border-bottom: none;
+}
+
+.payment-label {
+    color: var(--text-secondary);
+}
+
+.payment-value {
+    font-family: 'AnjomanBold', sans-serif;
+    color: var(--text-primary);
+}
+
+.total-row {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 2px solid var(--primary-color);
+}
+
+.total-row .payment-value {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+/* Footer */
+.invoice-footer {
+    text-align: center;
+    padding: 2rem;
+    background: var(--background-secondary);
+    color: var(--text-secondary);
+}
+
+.footer-content {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.footer-logo {
+    max-width: 150px;
+    margin-bottom: 1rem;
+}
+
+.footer-contacts {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 1rem 0;
+}
+
+.footer-contact {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.footer-contact i {
+    color: var(--primary-color);
+}
+
+.social-links {
+    margin-top: 1rem;
+}
+
+.social-links a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    margin: 0 0.5rem;
+}
+
+.social-links a:hover {
+    color: var(--primary-color);
+}
+
+/* Print Styles */
+@media print {
+    body {
+        background: white !important;
+    }
+
+    .invoice-container {
+        margin: 0;
+        box-shadow: none;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    .items-table th {
+        background-color: #eee !important;
+        color: black !important;
+    }
+
+    .invoice-header {
+        background: white !important;
+        color: black !important;
+    }
+
+    .invoice-header::before {
+        display: none;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .party-info,
+    .payment-section {
+        grid-template-columns: 1fr;
+    }
+
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+
+    .company-info,
+    .invoice-meta {
+        text-align: center;
+    }
+
+    .items-table {
+        display: block;
+        overflow-x: auto;
+    }
+}
+
+/* QR Code */
+.qr-code {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    width: 100px;
+    height: 100px;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 8px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--background-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
+}
