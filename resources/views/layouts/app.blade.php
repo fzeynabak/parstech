@@ -7,7 +7,7 @@
     <title>داشبورد | حسابیر</title>
     <link rel="stylesheet" href="{{ asset('fonts/fonts.css') }}">
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/sidebar-custom.css') }}">sales-invoice.css
+    <link rel="stylesheet" href="{{ asset('css/sidebar-custom.css') }}">
     <link rel="stylesheet" href="{{ asset('css/sales-show.css') }}">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -19,10 +19,10 @@
     @stack('styles')
     <style>
         body { background: #f9fafb; }
-        div#main-content {
-    margin-right: 278px;
-    padding: 15px;
-}
+                div#main-content {
+            margin-right: 278px;
+            padding: 15px;
+        }
     </style>
 </head>
 <body>

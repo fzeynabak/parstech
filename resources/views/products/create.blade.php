@@ -1,4 +1,4 @@
-@extends('layouts.master')
+@extends('layouts.app')
 @section('title', 'افزودن محصول جدید')
 
 @section('head')
