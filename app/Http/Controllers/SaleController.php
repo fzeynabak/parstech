@@ -11,14 +11,16 @@ use App\Models\Person;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Hekmatinasser\Verta\Verta;
+use PDF;
 
 class SaleController extends Controller
 {
     public function print(Sale $sale)
-{
-    $sale->load(['customer', 'seller', 'items.product']);
-    return view('sales.print', compact('sale'));
-}
+    {
+        $sale->load(['customer', 'seller', 'items.product']);
+        return view('sales.print', compact('sale'));
+    }
     public function index(Request $request)
     {
         $query = Sale::with(['seller', 'customer', 'items.product', 'currency']);

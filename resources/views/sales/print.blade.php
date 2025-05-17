@@ -1,284 +1,293 @@
-@php
-use Hekmatinasser\Verta\Verta;
-@endphp
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>فاکتور {{ $sale->invoice_number }}</title>
-    <style>
-        @font-face {
-            font-family: 'IranSans';
-            src: url('{{ public_path('fonts/IRANSans.ttf') }}') format('truetype');
-        }
+@extends('layouts.app')
 
+@section('title', 'چاپ فاکتور #' . $sale->invoice_number)
+
+@section('head')
+<style>
+    @media print {
         body {
-            font-family: 'IranSans', sans-serif;
-            background-color: white;
-            padding: 20px;
-            margin: 0;
+            background: white !important;
         }
+        .main-content {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        .sidebar,
+        .no-print,
+        .btn,
+        .modal,
+        #sidebar {
+            display: none !important;
+        }
+    }
 
-        .invoice-container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
+    .invoice-print {
+        background: white;
+        padding: 20px;
+        max-width: 800px;
+        margin: 20px auto;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
 
-        .invoice-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #00bcd4;
-            padding-bottom: 20px;
-        }
+    .invoice-header {
+        text-align: center;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #00bcd4;
+        margin-bottom: 20px;
+    }
 
-        .company-info {
-            text-align: right;
-        }
+    .invoice-header h1 {
+        font-size: 24px;
+        color: #333;
+        margin: 10px 0;
+    }
 
-        .company-logo {
-            width: 150px;
-        }
+    .invoice-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
 
-        .invoice-title {
-            text-align: center;
-            font-size: 24px;
-            color: #00bcd4;
-            margin-bottom: 20px;
-        }
+    .party-info {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 30px;
+        gap: 20px;
+    }
 
-        .invoice-meta {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
+    .info-box {
+        flex: 1;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 5px;
+    }
 
-        .meta-item {
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 5px;
-        }
+    .info-box h4 {
+        color: #00bcd4;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 5px;
+    }
 
-        .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-        }
+    .table {
+        width: 100%;
+        margin-bottom: 20px;
+    }
 
-        .items-table th {
-            background: #00bcd4;
-            color: white;
-            padding: 10px;
-            text-align: center;
-        }
+    .table th {
+        background: #00bcd4;
+        color: white;
+    }
 
-        .items-table td {
-            padding: 10px;
-            border: 1px solid #ddd;
-            text-align: center;
-        }
+    .table th,
+    .table td {
+        padding: 10px;
+        text-align: center;
+    }
 
-        .payment-info {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 5px;
-            margin-bottom: 30px;
-        }
+    .payment-summary {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 30px;
+    }
 
-        .payment-details {
-            margin-top: 20px;
-        }
+    .payment-methods,
+    .payment-totals {
+        flex: 1;
+        max-width: 48%;
+    }
 
-        .payment-method {
-            margin-bottom: 10px;
-            padding: 10px;
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
+    .payment-box {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
 
-        .total-section {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 2px solid #00bcd4;
-        }
+    .payment-box h4 {
+        color: #00bcd4;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 5px;
+    }
 
-        .qr-code {
-            text-align: left;
-            margin-top: 20px;
-        }
+    .footer {
+        text-align: center;
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 2px solid #00bcd4;
+        color: #666;
+    }
+</style>
+@endsection
 
-        @media print {
-            body {
-                background: white;
-            }
-            .invoice-container {
-                box-shadow: none;
-            }
-            .no-print {
-                display: none;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="invoice-container">
-        <!-- هدر فاکتور -->
-        <div class="invoice-header">
-            <div class="company-info">
-                <img src="{{ public_path('images/logo.png') }}" alt="لوگو" class="company-logo">
-                <h2>مرکز خدمات (کامپیوتر، کافی نت، موبایل)</h2>
-            </div>
-            <div class="invoice-number">
-                <h3>فاکتور فروش</h3>
-                <p>شماره: {{ $sale->invoice_number }}</p>
-                <p>تاریخ: {{ verta($sale->created_at)->format('Y/m/d') }}</p>
-            </div>
+@section('content')
+<div class="invoice-print">
+    <!-- هدر فاکتور -->
+    <div class="invoice-header">
+        <img src="{{ asset('images/logo.png') }}" alt="لوگو" style="max-width: 200px;">
+        <h1>مرکز خدمات (کامپیوتر،کافی نت، موبایل)</h1>
+        <div>پارس تک</div>
+    </div>
+
+    <!-- اطلاعات فاکتور -->
+    <div class="invoice-meta">
+        <div>
+            <strong>شماره فاکتور:</strong>
+            <span>{{ $sale->invoice_number }}</span>
         </div>
-
-        <!-- اطلاعات مشتری و فروشنده -->
-        <div class="invoice-meta">
-            <div class="meta-item">
-                <h4>مشخصات خریدار</h4>
-                <p>{{ $sale->customer->full_name }}</p>
-                @if($sale->customer->mobile)
-                <p>شماره تماس: {{ $sale->customer->mobile }}</p>
-                @endif
-                @if($sale->customer->address)
-                <p>آدرس: {{ $sale->customer->address }}</p>
-                @endif
-            </div>
-            <div class="meta-item">
-                <h4>مشخصات فروشنده</h4>
-                <p>{{ $sale->seller->full_name }}</p>
-                <p>کد فروشنده: {{ $sale->seller->seller_code }}</p>
-            </div>
+        <div>
+            <strong>تاریخ:</strong>
+            <span>{{ jdate($sale->created_at)->format('Y/m/d') }}</span>
         </div>
+    </div>
 
-        <!-- جدول اقلام -->
-        <table class="items-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>شرح کالا</th>
-                    <th>تعداد</th>
-                    <th>قیمت واحد</th>
-                    <th>تخفیف</th>
-                    <th>مالیات</th>
-                    <th>قیمت کل</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($sale->items as $index => $item)
-                <tr>
-                    <td>{{ $index + 1 }}</td>
-                    <td>{{ $item->product->title }}</td>
-                    <td>{{ number_format($item->quantity) }}</td>
-                    <td>{{ number_format($item->unit_price) }}</td>
-                    <td>{{ number_format($item->discount) }}</td>
-                    <td>{{ number_format($item->tax) }}</td>
-                    <td>{{ number_format($item->total) }}</td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+    <!-- اطلاعات طرفین -->
+    <div class="party-info">
+        <div class="info-box">
+            <h4>مشخصات خریدار</h4>
+            <p><strong>نام:</strong> {{ $sale->customer->full_name }}</p>
+            @if($sale->customer->mobile)
+            <p><strong>موبایل:</strong> {{ $sale->customer->mobile }}</p>
+            @endif
+            @if($sale->customer->address)
+            <p><strong>آدرس:</strong> {{ $sale->customer->address }}</p>
+            @endif
+        </div>
+        <div class="info-box">
+            <h4>مشخصات فروشنده</h4>
+            <p><strong>نام:</strong> {{ $sale->seller->full_name }}</p>
+            <p><strong>کد فروشنده:</strong> {{ $sale->seller->seller_code }}</p>
+        </div>
+    </div>
 
-        <!-- اطلاعات پرداخت -->
-        <div class="payment-info">
-            <h4>جزئیات پرداخت</h4>
-            <div class="payment-details">
+    <!-- جدول اقلام -->
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>شرح کالا</th>
+                <th>تعداد</th>
+                <th>قیمت واحد</th>
+                <th>تخفیف</th>
+                <th>مالیات</th>
+                <th>قیمت کل</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($sale->items as $index => $item)
+            <tr>
+                <td>{{ $index + 1 }}</td>
+                <td>{{ $item->product->title }}</td>
+                <td>{{ number_format($item->quantity) }}</td>
+                <td>{{ number_format($item->unit_price) }}</td>
+                <td>{{ number_format($item->discount) }}</td>
+                <td>{{ number_format($item->tax) }}</td>
+                <td>{{ number_format($item->total) }}</td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+
+    <!-- خلاصه پرداخت -->
+    <div class="payment-summary">
+        <!-- روش‌های پرداخت -->
+        <div class="payment-methods">
+            <div class="payment-box">
+                <h4>روش‌های پرداخت</h4>
                 @if($sale->cash_amount > 0)
-                <div class="payment-method">
-                    <strong>پرداخت نقدی:</strong>
-                    <p>مبلغ: {{ number_format($sale->cash_amount) }} تومان</p>
-                    @if($sale->cash_reference)
-                    <p>شماره رسید: {{ $sale->cash_reference }}</p>
-                    @endif
-                    <p>تاریخ: {{ verta($sale->cash_paid_at)->format('Y/m/d') }}</p>
-                </div>
+                <p>
+                    <strong>نقدی:</strong>
+                    <span>{{ number_format($sale->cash_amount) }} تومان</span>
+                </p>
                 @endif
 
                 @if($sale->card_amount > 0)
-                <div class="payment-method">
+                <p>
                     <strong>کارت به کارت:</strong>
-                    <p>مبلغ: {{ number_format($sale->card_amount) }} تومان</p>
-                    @if($sale->card_number)
-                    <p>شماره کارت: {{ $sale->card_number }}</p>
-                    @endif
+                    <span>{{ number_format($sale->card_amount) }} تومان</span>
                     @if($sale->card_reference)
-                    <p>شماره پیگیری: {{ $sale->card_reference }}</p>
+                    <br>
+                    <small>شماره پیگیری: {{ $sale->card_reference }}</small>
                     @endif
-                    <p>تاریخ: {{ verta($sale->card_paid_at)->format('Y/m/d') }}</p>
-                </div>
+                </p>
                 @endif
 
                 @if($sale->pos_amount > 0)
-                <div class="payment-method">
+                <p>
                     <strong>کارتخوان:</strong>
-                    <p>مبلغ: {{ number_format($sale->pos_amount) }} تومان</p>
-                    @if($sale->pos_terminal)
-                    <p>شماره پایانه: {{ $sale->pos_terminal }}</p>
-                    @endif
+                    <span>{{ number_format($sale->pos_amount) }} تومان</span>
                     @if($sale->pos_reference)
-                    <p>شماره پیگیری: {{ $sale->pos_reference }}</p>
+                    <br>
+                    <small>شماره پیگیری: {{ $sale->pos_reference }}</small>
                     @endif
-                    <p>تاریخ: {{ verta($sale->pos_paid_at)->format('Y/m/d') }}</p>
-                </div>
+                </p>
                 @endif
 
                 @if($sale->cheque_amount > 0)
-                <div class="payment-method">
+                <p>
                     <strong>چک:</strong>
-                    <p>مبلغ: {{ number_format($sale->cheque_amount) }} تومان</p>
+                    <span>{{ number_format($sale->cheque_amount) }} تومان</span>
                     @if($sale->cheque_number)
-                    <p>شماره چک: {{ $sale->cheque_number }}</p>
+                    <br>
+                    <small>شماره چک: {{ $sale->cheque_number }}</small>
                     @endif
-                    @if($sale->cheque_bank)
-                    <p>بانک: {{ $sale->cheque_bank }}</p>
-                    @endif
-                    <p>تاریخ سررسید: {{ verta($sale->cheque_due_date)->format('Y/m/d') }}</p>
-                </div>
+                </p>
                 @endif
             </div>
         </div>
 
         <!-- جمع کل -->
-        <div class="total-section">
-            <div>
-                <p>جمع کل: {{ number_format($sale->total_price) }} تومان</p>
-                <p>تخفیف: {{ number_format($sale->discount) }} تومان</p>
-                <p>مالیات: {{ number_format($sale->tax) }} تومان</p>
-                <p>مبلغ قابل پرداخت: {{ number_format($sale->final_amount) }} تومان</p>
-                <p>مبلغ پرداخت شده: {{ number_format($sale->paid_amount) }} تومان</p>
-                <p>مانده حساب: {{ number_format($sale->remaining_amount) }} تومان</p>
+        <div class="payment-totals">
+            <div class="payment-box">
+                <h4>خلاصه مالی</h4>
+                <p>
+                    <strong>جمع کل:</strong>
+                    <span>{{ number_format($sale->total_price) }} تومان</span>
+                </p>
+                <p>
+                    <strong>تخفیف:</strong>
+                    <span>{{ number_format($sale->discount) }} تومان</span>
+                </p>
+                <p>
+                    <strong>مالیات:</strong>
+                    <span>{{ number_format($sale->tax) }} تومان</span>
+                </p>
+                <p>
+                    <strong>مبلغ نهایی:</strong>
+                    <span>{{ number_format($sale->final_amount) }} تومان</span>
+                </p>
+                <p>
+                    <strong>پرداخت شده:</strong>
+                    <span>{{ number_format($sale->paid_amount) }} تومان</span>
+                </p>
+                <p>
+                    <strong>مانده:</strong>
+                    <span>{{ number_format($sale->remaining_amount) }} تومان</span>
+                </p>
             </div>
-            <div class="qr-code">
-                {!! QrCode::size(100)->generate(route('sales.show', $sale)) !!}
-            </div>
-        </div>
-
-        <!-- پاورقی -->
-        <div style="margin-top: 50px; text-align: center; color: #666;">
-            <p>{{ config('app.name') }}</p>
-            <p>{{ config('app.address') }}</p>
-            <p>تلفن: {{ config('app.phone') }}</p>
-            <p>وبسایت: {{ config('app.url') }}</p>
         </div>
     </div>
 
-    <!-- دکمه پرینت -->
-    <div class="no-print" style="text-align: center; margin-top: 20px;">
-        <button onclick="window.print()" style="padding: 10px 20px; background: #00bcd4; color: white; border: none; border-radius: 5px; cursor: pointer;">
-            چاپ فاکتور
-        </button>
+    <!-- پاورقی -->
+    <div class="footer">
+        <p>مرکز خدمات پارس تک</p>
+        <p>تلفن: 09380074019</p>
+        <p>www.tepars.ir | tepars.ir@gmail.com</p>
     </div>
-</body>
-</html>
+</div>
+
+<!-- دکمه پرینت -->
+<div class="text-center mt-4 mb-4 no-print">
+    <button onclick="window.print()" class="btn btn-primary">
+        <i class="fas fa-print"></i>
+        چاپ فاکتور
+    </button>
+</div>
+@endsection
+
+@section('scripts')
+<script>
+document.title = 'چاپ فاکتور #{{ $sale->invoice_number }}';
+</script>
+@endsection

@@ -399,11 +399,11 @@
     window.addEventListener('DOMContentLoaded', convertAllNumbersToFa);
     // اگر ajax داشتی یا بعد از فرم نیاز شد، دوباره convertAllNumbersToFa() اجرا شود
     // تابع مدیریت پرینت
+
     const InvoiceManager = {
         printInvoice() {
-            window.location.href = "{{ route('sales.print', $sale) }}";
+            window.open("{{ route('sales.print', $sale) }}", "_blank");
         }
     };
-
 </script>
 @endsection
