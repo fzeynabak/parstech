@@ -248,6 +248,10 @@
                     <span>مبلغ نهایی:</span>
                     <span class="farsi-number">{{ number_format($final_amount) }}</span>
                 </div>
+                <div class="summary-total">
+                    <span>مبلغ باقی مانده:</span>
+                    <span class="farsi-number">{{ number_format($remaining_amount) }}</span>
+                </div>
             </div>
         </div>
 

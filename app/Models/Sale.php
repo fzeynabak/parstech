@@ -25,10 +25,38 @@ class Sale extends Model
         'paid_amount',
         'remaining_amount',
         'status',
+        'payment_status',
         'paid_at',
         'payment_method',
         'payment_reference',
-        'cancellation_reason'
+        'cancellation_reason',
+        // فیلدهای پرداخت نقدی
+        'cash_amount',
+        'cash_reference',
+        'cash_paid_at',
+        // فیلدهای پرداخت کارت به کارت
+        'card_amount',
+        'card_reference',
+        'card_number',
+        'card_bank',
+        'card_paid_at',
+        // فیلدهای پرداخت POS
+        'pos_amount',
+        'pos_reference',
+        'pos_terminal',
+        'pos_paid_at',
+        // فیلدهای پرداخت آنلاین
+        'online_amount',
+        'online_reference',
+        'online_transaction_id',
+        'online_paid_at',
+        // فیلدهای چک
+        'cheque_amount',
+        'cheque_number',
+        'cheque_bank',
+        'cheque_due_date',
+        'cheque_status',
+        'cheque_received_at'
     ];
 
     protected $casts = [
@@ -86,17 +114,45 @@ class Sale extends Model
 
     public function calculateTotals()
     {
-        $this->total_price = $this->items->sum(function($item) {
+        $total_price = $this->items->sum(function($item) {
             return $item->quantity * $item->unit_price;
         });
+        $discount = $this->items->sum('discount');
+        $tax = $this->items->sum('tax');
+        $final_amount = $total_price - $discount + $tax;
+        $remaining_amount = $final_amount - $this->paid_amount;
 
-        $this->discount = $this->items->sum('discount');
+        // فقط مقادیر را برگردان، نه ذخیره
+        return [
+            'total_price' => $total_price,
+            'discount' => $discount,
+            'tax' => $tax,
+            'final_amount' => $final_amount,
+            'remaining_amount' => $remaining_amount,
+        ];
+    }
 
-        $this->tax = $this->items->sum('tax');
+    public function updatePaymentStatus()
+    {
+        $totalPaid = 0;
 
-        $this->final_amount = $this->total_price - $this->discount + $this->tax;
+        // جمع همه پرداخت‌ها
+        if ($this->cash_amount) $totalPaid += $this->cash_amount;
+        if ($this->card_amount) $totalPaid += $this->card_amount;
+        if ($this->pos_amount) $totalPaid += $this->pos_amount;
+        if ($this->online_amount) $totalPaid += $this->online_amount;
+        if ($this->cheque_amount && $this->cheque_status === 'cleared') $totalPaid += $this->cheque_amount;
 
-        $this->remaining_amount = $this->final_amount - $this->paid_amount;
+        $this->paid_amount = $totalPaid;
+        $this->remaining_amount = $this->final_amount - $totalPaid;
+
+        if ($this->remaining_amount <= 0) {
+            $this->remaining_amount = 0;
+            $this->status = 'paid';
+            $this->paid_at = $this->paid_at ?? now();
+        } else {
+            $this->status = 'pending';
+        }
 
         $this->save();
     }
@@ -155,10 +211,10 @@ class Sale extends Model
             $sale->calculateTotals();
         });
 
-        static::saved(function ($sale) {
-            // اگر پرداخت کامل شد، وضعیت را به‌روز کن
-            if ($sale->paid_amount >= $sale->final_amount && $sale->status === 'pending') {
-                $sale->update(['status' => 'paid']);
+        static::updated(function ($sale) {
+            if ($sale->wasChanged(['total_price', 'discount', 'tax']) ||
+                $sale->wasChanged(['cash_amount', 'card_amount', 'pos_amount', 'online_amount', 'cheque_amount'])) {
+                $sale->calculateTotals();
             }
         });
     }

@@ -121,102 +121,109 @@ class SaleController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'customer_id' => 'required|exists:persons,id',
-            'seller_id' => 'required|exists:sellers,id',
-            'currency_id' => 'required|exists:currencies,id',
-            'products_input' => 'required',
-        ], [
-            'customer_id.required' => 'انتخاب مشتری الزامی است.',
-            'seller_id.required' => 'انتخاب فروشنده الزامی است.',
-            'currency_id.required' => 'انتخاب واحد پول الزامی است.',
-            'products_input.required' => 'حداقل یک محصول یا خدمت به فاکتور اضافه کنید.',
+{
+    $request->validate([
+        'customer_id' => 'required|exists:persons,id',
+        'seller_id' => 'required|exists:sellers,id',
+        'currency_id' => 'required|exists:currencies,id',
+        'products_input' => 'required',
+    ], [
+        'customer_id.required' => 'انتخاب مشتری الزامی است.',
+        'seller_id.required' => 'انتخاب فروشنده الزامی است.',
+        'currency_id.required' => 'انتخاب واحد پول الزامی است.',
+        'products_input.required' => 'حداقل یک محصول یا خدمت به فاکتور اضافه کنید.',
+    ]);
+
+    $items = json_decode($request->products_input, true);
+    if (empty($items)) {
+        return back()->withInput()->withErrors(['products' => 'هیچ محصولی انتخاب نشده است.']);
+    }
+
+    DB::beginTransaction();
+    try {
+        $totalPrice = 0;
+        $totalDiscount = 0;
+        $totalTax = 0;
+
+        foreach ($items as $item) {
+            $count = intval($item['count']);
+            $unitPrice = intval($item['sell_price']);
+            $discount = floatval($item['discount'] ?? 0);
+            $tax = floatval($item['tax'] ?? 0);
+
+            $subtotal = $count * $unitPrice;
+            $itemDiscount = $discount;
+            $itemTax = ($subtotal - $itemDiscount) * ($tax / 100);
+
+            $totalPrice += $subtotal;
+            $totalDiscount += $itemDiscount;
+            $totalTax += $itemTax;
+
+            $product = Product::find($item['id']);
+            if ($product && $product->type === 'product') {
+                if($product->stock < $count) {
+                    throw new \Exception("موجودی محصول '{$product->name}' کافی نیست.");
+                }
+                $product->stock -= $count;
+                $product->save();
+            }
+        }
+
+        // محاسبه مبلغ نهایی
+        $finalAmount = $totalPrice - $totalDiscount + $totalTax;
+
+        // شماره فاکتور اتوماتیک و غیرتکراری
+        $invoice_number = $this->generateNextInvoiceNumber();
+
+        $sale = Sale::create([
+            'invoice_number' => $invoice_number,
+            'reference' => $request->reference,
+            'customer_id' => $request->customer_id,
+            'seller_id' => $request->seller_id,
+            'currency_id' => $request->currency_id,
+            'title' => $request->title,
+            'issued_at' => Carbon::now(),
+            'total_price' => $totalPrice,
+            'discount' => $totalDiscount,
+            'tax' => $totalTax,
+            'final_amount' => $finalAmount,
+            'status' => 'pending'
         ]);
 
-        $items = json_decode($request->products_input, true);
-        if (empty($items)) {
-            return back()->withInput()->withErrors(['products' => 'هیچ محصولی انتخاب نشده است.']);
-        }
+        foreach ($items as $item) {
+            $count = intval($item['count']);
+            $unitPrice = intval($item['sell_price']);
+            $discount = floatval($item['discount'] ?? 0);
+            $tax = floatval($item['tax'] ?? 0);
 
-        DB::beginTransaction();
-        try {
-            $totalPrice = 0;
-            $totalDiscount = 0;
-            $totalTax = 0;
+            $subtotal = $count * $unitPrice;
+            $itemDiscount = $discount;
+            $itemTax = ($subtotal - $itemDiscount) * ($tax / 100);
+            $total = $subtotal - $itemDiscount + $itemTax;
 
-            foreach ($items as $item) {
-                $count = intval($item['count']);
-                $unitPrice = intval($item['sell_price']);
-                $discount = floatval($item['discount'] ?? 0);
-                $tax = floatval($item['tax'] ?? 0);
-
-                $subtotal = $count * $unitPrice;
-                $itemDiscount = $discount;
-                $itemTax = ($subtotal - $itemDiscount) * ($tax / 100);
-
-                $totalPrice += $subtotal;
-                $totalDiscount += $itemDiscount;
-                $totalTax += $itemTax;
-
-                $product = Product::find($item['id']);
-                if ($product && $product->type === 'product') {
-                    if($product->stock < $count) {
-                        throw new \Exception("موجودی محصول '{$product->name}' کافی نیست.");
-                    }
-                    $product->stock -= $count;
-                    $product->save();
-                }
-            }
-
-            // شماره فاکتور اتوماتیک و غیرتکراری
-            $invoice_number = $this->generateNextInvoiceNumber();
-
-            $sale = Sale::create([
-                'invoice_number' => $invoice_number,
-                'reference' => $request->reference,
-                'customer_id' => $request->customer_id,
-                'seller_id' => $request->seller_id,
-                'currency_id' => $request->currency_id,
-                'title' => $request->title,
-                'issued_at' => Carbon::now(),
-                'total_price' => $totalPrice,
-                'discount' => $totalDiscount,
-                'tax' => $totalTax,
-                'status' => 'pending'
+            SaleItem::create([
+                'sale_id' => $sale->id,
+                'product_id' => $item['id'],
+                'description' => $item['desc'] ?? '',
+                'unit' => $item['unit'] ?? '',
+                'quantity' => $count,
+                'unit_price' => $unitPrice,
+                'discount' => $itemDiscount,
+                'tax' => $itemTax,
+                'total' => $total
             ]);
-
-            foreach ($items as $item) {
-                $count = intval($item['count']);
-                $unitPrice = intval($item['sell_price']);
-                $discount = floatval($item['discount'] ?? 0);
-                $tax = floatval($item['tax'] ?? 0);
-
-                $subtotal = $count * $unitPrice;
-                $itemDiscount = $discount;
-                $itemTax = ($subtotal - $itemDiscount) * ($tax / 100);
-                $total = $subtotal - $itemDiscount + $itemTax;
-
-                SaleItem::create([
-                    'sale_id' => $sale->id,
-                    'product_id' => $item['id'],
-                    'description' => $item['desc'] ?? '',
-                    'unit' => $item['unit'] ?? '',
-                    'quantity' => $count,
-                    'unit_price' => $unitPrice,
-                    'discount' => $itemDiscount,
-                    'tax' => $itemTax,
-                    'total' => $total
-                ]);
-            }
-
-            DB::commit();
-            return redirect()->route('sales.index')->with('success', 'فاکتور با موفقیت ثبت شد.');
-        } catch (\Exception $ex) {
-            DB::rollBack();
-            return back()->withInput()->withErrors(['error' => $ex->getMessage()]);
         }
+
+        // محاسبه مجدد totals برای اطمینان
+        $sale->calculateTotals();
+
+        DB::commit();
+        return redirect()->route('sales.index')->with('success', 'فاکتور با موفقیت ثبت شد.');
+    } catch (\Exception $ex) {
+        DB::rollBack();
+        return back()->withInput()->withErrors(['error' => $ex->getMessage()]);
     }
+}
 
     public function show(Sale $sale)
     {
