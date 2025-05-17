@@ -7,6 +7,8 @@ use App\Models\Service;
 use App\Models\Category;
 use App\Models\Unit;
 use App\Models\ServiceCategory;
+use Illuminate\Support\Facades\Validator;
+
 class ServiceController extends Controller
 {
     /**
@@ -14,15 +16,18 @@ class ServiceController extends Controller
      */
     public function index()
     {
+
+        $serviceCategories = Category::where('category_type', 'service')->get();
         $services = Service::latest()->paginate(20);
         return view('services.index', compact('services'));
     }
+    protected $fillable = ['name'];
     public function nextCode()
     {
-        $last = Service::where('service_code', 'like', 'ser%')
-            ->orderByRaw('CAST(SUBSTRING(service_code, 4) AS UNSIGNED) DESC')
+        $last = Service::where('code', 'like', 'ser%')
+            ->orderByRaw('CAST(SUBSTRING(code, 4) AS UNSIGNED) DESC')
             ->first();
-        if($last && preg_match('/^ser(\d+)$/', $last->service_code, $m)) {
+        if($last && preg_match('/^ser(\d+)$/', $last->code, $m)) {
             $next = intval($m[1]) + 1;
         } else {
             $next = 10001;
@@ -35,7 +40,6 @@ class ServiceController extends Controller
     public function create()
     {
         $serviceCategories = ServiceCategory::all();
-        // فرض می‌کنیم جدول units به صورت جداگانه داری، در غیر این صورت لیست ثابت
         $units = Service::select('unit')->distinct()->pluck('unit')->toArray();
         if (empty($units)) {
             $units = ['ساعت', 'روز', 'عدد'];
@@ -48,14 +52,14 @@ class ServiceController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'service_code' => 'required|string|max:255|unique:services,service_code',
             'service_category_id' => 'nullable|exists:service_categories,id',
-            'unit' => 'required|string|max:255',
-            'price' => 'nullable|numeric|min:0',
-            'tax' => 'nullable|numeric|min:0|max:100',
-            'execution_cost' => 'nullable|numeric|min:0',
+            'unit' => 'nullable|string|max:255',
+            'price' => 'nullable|numeric',
+            'tax' => 'nullable|numeric',
+            'execution_cost' => 'nullable|numeric',
             'short_description' => 'nullable|string|max:1000',
             'description' => 'nullable|string',
             'image' => 'nullable|image|max:2048',
@@ -64,30 +68,15 @@ class ServiceController extends Controller
             'is_discountable' => 'nullable|boolean',
         ]);
 
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
-
-        $service = new Service();
-        $service->title = $request->title;
-        $service->service_code = $request->service_code;
-        $service->service_category_id = $request->service_category_id;
-        $service->unit = $request->unit;
-        $service->price = $request->price ?: 0;
-        $service->tax = $request->tax ?: 0;
-        $service->execution_cost = $request->execution_cost ?: 0;
-        $service->short_description = $request->short_description;
-        $service->description = $request->description;
-        $service->is_active = $request->has('is_active');
-        $service->is_vat_included = $request->has('is_vat_included');
-        $service->is_discountable = $request->has('is_discountable');
+        $validated['is_active'] = $request->has('is_active');
+        $validated['is_vat_included'] = $request->has('is_vat_included');
+        $validated['is_discountable'] = $request->has('is_discountable');
 
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('services', 'public');
-            $service->image = $path;
+            $validated['image'] = $request->file('image')->store('services', 'public');
         }
 
-        $service->save();
+        Service::create($validated);
 
         return redirect()->route('services.index')->with('success', 'خدمات با موفقیت ثبت شد.');
     }
@@ -98,9 +87,12 @@ class ServiceController extends Controller
     public function edit($id)
     {
         $service = Service::findOrFail($id);
-        $categories = Category::where('category_type', 'service')->get();
-        $units = Unit::all();
-        return view('services.edit', compact('service', 'categories', 'units'));
+        $serviceCategories = Category::where('category_type', 'service')->get();
+        $units = Service::select('unit')->distinct()->pluck('unit')->toArray();
+        if (empty($units)) {
+            $units = ['ساعت', 'روز', 'عدد'];
+        }
+        return view('services.edit', compact('service', 'serviceCategories', 'units'));
     }
 
     /**

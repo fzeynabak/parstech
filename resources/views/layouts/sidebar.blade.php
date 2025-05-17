@@ -25,144 +25,11 @@
                     </a>
                 </li>
 
-
-                {{-- فروش --}}
-                <li class="nav-item has-treeview {{ request()->is('sales*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->is('sales*') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-shopping-cart"></i>
-                        <p>
-                            فروش
-                            <i class="right fas fa-angle-left"></i>
-                        </p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="{{ route('sales.newform') }}" class="nav-link {{ request()->routeIs('sales.newform') ? 'active' : '' }}">
-                                <i class="fas fa-file-invoice nav-icon"></i>
-                                <p>فروش جدید</p>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="{{ route('sales.index') }}" class="nav-link {{ request()->routeIs('sales.index') ? 'active' : '' }}">
-                                <i class="fas fa-list nav-icon"></i>
-                                <p>لیست فروش‌ها</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('sales.returns') }}" class="nav-link {{ request()->routeIs('sales.returns') ? 'active' : '' }}">
-                                <i class="fas fa-undo nav-icon"></i>
-                                <p>مرجوعی فروش</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-
-                {{-- حسابداری --}}
-                <li class="nav-item has-treeview {{ request()->is('accounting*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->is('accounting*') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-calculator"></i>
-                        <p>
-                            حسابداری
-                            <i class="right fas fa-angle-left"></i>
-                        </p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="{{ route('accounting.journal') }}" class="nav-link {{ request()->routeIs('accounting.journal') ? 'active' : '' }}">
-                                <i class="fas fa-book nav-icon"></i>
-                                <p>دفتر روزنامه</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('accounting.ledger') }}" class="nav-link {{ request()->routeIs('accounting.ledger') ? 'active' : '' }}">
-                                <i class="fas fa-book-open nav-icon"></i>
-                                <p>دفتر کل</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('accounting.balance') }}" class="nav-link {{ request()->routeIs('accounting.balance') ? 'active' : '' }}">
-                                <i class="fas fa-balance-scale nav-icon"></i>
-                                <p>تراز آزمایشی</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-
-                {{-- امور مالی --}}
-                <li class="nav-item has-treeview {{ request()->is('financial*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->is('financial*') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-coins"></i>
-                        <p>
-                            امور مالی
-                            <i class="right fas fa-angle-left"></i>
-                        </p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="{{ route('financial.income') }}" class="nav-link {{ request()->routeIs('financial.income') ? 'active' : '' }}">
-                                <i class="fas fa-arrow-down nav-icon"></i>
-                                <p>درآمدها</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('financial.expenses') }}" class="nav-link {{ request()->routeIs('financial.expenses') ? 'active' : '' }}">
-                                <i class="fas fa-arrow-up nav-icon"></i>
-                                <p>هزینه‌ها</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('financial.banking') }}" class="nav-link {{ request()->routeIs('financial.banking') ? 'active' : '' }}">
-                                <i class="fas fa-university nav-icon"></i>
-                                <p>عملیات بانکی</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('financial.cheques') }}" class="nav-link {{ request()->routeIs('financial.cheques') ? 'active' : '' }}">
-                                <i class="fas fa-money-check-alt nav-icon"></i>
-                                <p>مدیریت چک‌ها</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-
-                {{-- فاکتورها --}}
-                <li class="nav-item has-treeview {{ request()->is('invoices*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->is('invoices*') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-file-invoice"></i>
-                        <p>
-                            فاکتورها
-                            <i class="right fas fa-angle-left"></i>
-                        </p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="{{ route('invoices.create') }}" class="nav-link {{ request()->routeIs('invoices.create') ? 'active' : '' }}">
-                                <i class="fas fa-plus nav-icon"></i>
-                                <p>صدور فاکتور</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('invoices.index') }}" class="nav-link {{ request()->routeIs('invoices.index') ? 'active' : '' }}">
-                                <i class="fas fa-list nav-icon"></i>
-                                <p>لیست فاکتورها</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('pre-invoices.index') }}" class="nav-link {{ request()->routeIs('pre-invoices.index') ? 'active' : '' }}">
-                                <i class="fas fa-file-alt nav-icon"></i>
-                                <p>پیش فاکتورها</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-
-                                                {{-- مدیریت انبار --}}
                 <li class="nav-item has-treeview {{ request()->is('products*') || request()->is('stocks*') || request()->is('categories*') ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ request()->is('products*') || request()->is('stocks*') || request()->is('categories*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-warehouse"></i>
                         <p>
-                            مدیریت انبار
+                            کالا و خدمات
                             <i class="right fas fa-angle-left"></i>
                         </p>
                     </a>
@@ -280,6 +147,113 @@
                         </li>
                     </ul>
                 </li>
+                
+                {{-- فروش --}}
+                <li class="nav-item has-treeview {{ request()->is('sales*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->is('sales*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-shopping-cart"></i>
+                        <p>
+                            فروش
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('sales.newform') }}" class="nav-link {{ request()->routeIs('sales.newform') ? 'active' : '' }}">
+                                <i class="fas fa-file-invoice nav-icon"></i>
+                                <p>فروش جدید</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="{{ route('sales.index') }}" class="nav-link {{ request()->routeIs('sales.index') ? 'active' : '' }}">
+                                <i class="fas fa-list nav-icon"></i>
+                                <p>لیست فروش‌ها</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('sales.returns') }}" class="nav-link {{ request()->routeIs('sales.returns') ? 'active' : '' }}">
+                                <i class="fas fa-undo nav-icon"></i>
+                                <p>مرجوعی فروش</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                {{-- حسابداری --}}
+                <li class="nav-item has-treeview {{ request()->is('accounting*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->is('accounting*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-calculator"></i>
+                        <p>
+                            حسابداری
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('accounting.journal') }}" class="nav-link {{ request()->routeIs('accounting.journal') ? 'active' : '' }}">
+                                <i class="fas fa-book nav-icon"></i>
+                                <p>دفتر روزنامه</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('accounting.ledger') }}" class="nav-link {{ request()->routeIs('accounting.ledger') ? 'active' : '' }}">
+                                <i class="fas fa-book-open nav-icon"></i>
+                                <p>دفتر کل</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('accounting.balance') }}" class="nav-link {{ request()->routeIs('accounting.balance') ? 'active' : '' }}">
+                                <i class="fas fa-balance-scale nav-icon"></i>
+                                <p>تراز آزمایشی</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                {{-- امور مالی --}}
+                <li class="nav-item has-treeview {{ request()->is('financial*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->is('financial*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-coins"></i>
+                        <p>
+                            امور مالی
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('financial.income') }}" class="nav-link {{ request()->routeIs('financial.income') ? 'active' : '' }}">
+                                <i class="fas fa-arrow-down nav-icon"></i>
+                                <p>درآمدها</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('financial.expenses') }}" class="nav-link {{ request()->routeIs('financial.expenses') ? 'active' : '' }}">
+                                <i class="fas fa-arrow-up nav-icon"></i>
+                                <p>هزینه‌ها</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('financial.banking') }}" class="nav-link {{ request()->routeIs('financial.banking') ? 'active' : '' }}">
+                                <i class="fas fa-university nav-icon"></i>
+                                <p>عملیات بانکی</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('financial.cheques') }}" class="nav-link {{ request()->routeIs('financial.cheques') ? 'active' : '' }}">
+                                <i class="fas fa-money-check-alt nav-icon"></i>
+                                <p>مدیریت چک‌ها</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+
+
+                                                {{-- مدیریت انبار --}}
+
+
+
 
                 {{-- گزارشات --}}
                 <li class="nav-item has-treeview {{ request()->is('reports*') ? 'menu-open' : '' }}">
