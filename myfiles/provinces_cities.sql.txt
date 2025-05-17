@@ -1,21 +1,3 @@
-SET NAMES utf8mb4;
-SET FOREIGN_KEY_CHECKS = 0;
-
--- ----------------------------
--- Table structure for provinces
--- ----------------------------
-DROP TABLE IF EXISTS `provinces`;
-CREATE TABLE `provinces`
-(
-    `id`   bigint UNSIGNED NOT NULL AUTO_INCREMENT,
-    `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-    PRIMARY KEY (`id`) USING BTREE,
-    UNIQUE INDEX `provinces_name_unique`(`name`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 32 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of provinces
--- ----------------------------
 INSERT INTO `provinces` (`id`, `name`)
 VALUES (1, 'آذربایجان شرقی'),
        (2, 'آذربایجان غربی'),
@@ -49,21 +31,11 @@ VALUES (1, 'آذربایجان شرقی'),
        (30, 'همدان'),
        (31, 'یزد');
 
+
 -- ----------------------------
 -- Table structure for cities
 -- ----------------------------
-DROP TABLE IF EXISTS `cities`;
-CREATE TABLE `cities`
-(
-    `id`          bigint UNSIGNED NOT NULL AUTO_INCREMENT,
-    `province_id` bigint UNSIGNED NOT NULL,
-    `name`        varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-    PRIMARY KEY (`id`) USING BTREE,
-    UNIQUE INDEX `cities_province_id_name_unique`(`province_id`, `name`) USING BTREE,
-    CONSTRAINT `cities_province_id_foreign` FOREIGN KEY (`province_id`) REFERENCES `provinces` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 1354 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
+-------------------
 -- Records of cities
 -- ----------------------------
 INSERT INTO `cities` (`id`, `province_id`, `name`)

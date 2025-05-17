@@ -39,7 +39,9 @@ class ServiceController extends Controller
      */
     public function create()
     {
-        $serviceCategories = ServiceCategory::all();
+        $serviceCategories = Category::where('category_type', 'service')->get();
+
+        // فرض می‌کنیم جدول units به صورت جداگانه داری، در غیر این صورت لیست ثابت
         $units = Service::select('unit')->distinct()->pluck('unit')->toArray();
         if (empty($units)) {
             $units = ['ساعت', 'روز', 'عدد'];
