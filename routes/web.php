@@ -34,7 +34,6 @@ use App\Http\Controllers\Api\ProductApiController;
 use App\Http\Controllers\Api\ServiceApiController;
 
 
-
 Route::get('sales/{sale}/print', [SaleController::class, 'print'])->name('sales.print');
 
 

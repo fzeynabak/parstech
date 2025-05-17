@@ -33,13 +33,13 @@
                             <!-- کد حسابداری -->
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label class="form-label required-field">کد حسابداری</label>
+                                    <label class="form-label required-field">کد مشتری</label>
                                     <div id="accounting_code_container">
                                         <div class="accounting-code-container">
                                             <input type="text" name="accounting_code"
                                                    id="accounting_code"
                                                    class="form-control @error('accounting_code') is-invalid @enderror"
-                                                   value="{{ old('accounting_code') }}"
+                                                   value="{{ old('accounting_code', $defaultCode ?? '') }}"
                                                    required {{ old('auto_code', '1') === '1' ? 'readonly' : '' }}>
                                             <label class="switch">
                                                 <input type="checkbox" id="autoCodeSwitch" name="auto_code"
