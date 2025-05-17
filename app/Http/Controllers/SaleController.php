@@ -21,14 +21,16 @@ class SaleController extends Controller
         $sale->load(['customer', 'seller', 'items.product']);
         return view('sales.print', compact('sale'));
     }
+
     public function index(Request $request)
     {
+        // مقدار پایه برای Query
         $baseQuery = Sale::with(['seller', 'customer', 'items.product', 'currency']);
 
-        // اعمال فیلترها
+        // فیلترها
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $baseQuery->where(function($q) use ($search) {
                 $q->where('invoice_number', 'like', "%{$search}%")
                   ->orWhere('reference', 'like', "%{$search}%")
                   ->orWhere('title', 'like', "%{$search}%")
@@ -40,15 +42,15 @@ class SaleController extends Controller
         }
 
         if ($request->filled('customer')) {
-            $query->where('customer_id', $request->customer);
+            $baseQuery->where('customer_id', $request->customer);
         }
 
         if ($request->filled('seller')) {
-            $query->where('seller_id', $request->seller);
+            $baseQuery->where('seller_id', $request->seller);
         }
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $baseQuery->where('status', $request->status);
         }
 
         if ($request->filled('date_range')) {
@@ -56,36 +58,35 @@ class SaleController extends Controller
             if (count($dates) == 2) {
                 $start = Carbon::createFromFormat('Y/m/d', trim($dates[0]))->startOfDay();
                 $end = Carbon::createFromFormat('Y/m/d', trim($dates[1]))->endOfDay();
-                $query->whereBetween('created_at', [$start, $end]);
+                $baseQuery->whereBetween('created_at', [$start, $end]);
             }
         }
 
         if ($request->filled('price_min')) {
-            $query->where('total_price', '>=', $request->price_min);
+            $baseQuery->where('total_price', '>=', $request->price_min);
         }
 
         if ($request->filled('price_max')) {
-            $query->where('total_price', '<=', $request->price_max);
+            $baseQuery->where('total_price', '<=', $request->price_max);
         }
 
         // مرتب‌سازی
         $sortField = $request->sort_by ?? 'created_at';
         $sortOrder = $request->sort_order ?? 'desc';
-        $query->orderBy($sortField, $sortOrder);
 
         // تعداد آیتم در هر صفحه
         $perPage = $request->per_page ?? 10;
 
-        // دریافت داده‌ها
+        // لیست فروش‌ها با صفحه‌بندی
         $sales = (clone $baseQuery)->orderBy($sortField, $sortOrder)->paginate($perPage)->withQueryString();
 
-        // محاسبه آمار
+        // محاسبه آمارها روی کل رکوردهای فیلترشده
         $totalSales = (clone $baseQuery)->sum('total_price');
         $salesCount = (clone $baseQuery)->count();
         $averageSale = $salesCount > 0 ? $totalSales / $salesCount : 0;
         $todaySales = (clone $baseQuery)->whereDate('created_at', Carbon::today())->sum('total_price');
 
-        // دریافت لیست‌های مورد نیاز برای فیلترها
+        // دریافت لیست مشتریان و فروشندگان برای فیلتر
         $customers = Person::whereHas('sales')->get();
         $sellers = Seller::whereHas('sales')->get();
 
@@ -122,8 +123,6 @@ class SaleController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            // شماره فاکتور دیگر نباید از کاربر گرفته شود؛ به صورت اتوماتیک تولید می‌شود
-            // 'invoice_number' => 'required|unique:sales,invoice_number',
             'customer_id' => 'required|exists:persons,id',
             'seller_id' => 'required|exists:sellers,id',
             'currency_id' => 'required|exists:currencies,id',
@@ -550,12 +549,12 @@ class SaleController extends Controller
             'selected_ids' => 'nullable|string'
         ]);
 
-        $query = Sale::with(['customer', 'seller', 'items.product', 'currency']);
+        $baseQuery = Sale::with(['customer', 'seller', 'items.product', 'currency']);
 
         // فیلتر بر اساس آیدی‌های انتخاب شده
         if ($request->filled('selected_ids')) {
             $ids = explode(',', $request->selected_ids);
-            $query->whereIn('id', $ids);
+            $baseQuery->whereIn('id', $ids);
         }
 
         // فیلتر تاریخ
@@ -564,11 +563,11 @@ class SaleController extends Controller
             if (count($dates) == 2) {
                 $start = Carbon::createFromFormat('Y/m/d', trim($dates[0]))->startOfDay();
                 $end = Carbon::createFromFormat('Y/m/d', trim($dates[1]))->endOfDay();
-                $query->whereBetween('created_at', [$start, $end]);
+                $baseQuery->whereBetween('created_at', [$start, $end]);
             }
         }
 
-        $sales = $query->get();
+        $sales = $baseQuery->get();
 
         // ایجاد خروجی بر اساس فرمت درخواستی
         switch ($request->format) {

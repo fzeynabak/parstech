@@ -20,7 +20,11 @@ class Product extends Model
         'min_stock',
         'unit',
         'barcode',
-        'is_active'
+        'is_active',
+        'buy_price',    // ← اضافه کن
+        'sell_price',   // ← اضافه کن
+        'discount',     // ← اگر داشتی
+        'store_barcode' // ← اگر داشتی
     ];
 
     protected $casts = [

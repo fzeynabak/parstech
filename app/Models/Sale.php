@@ -86,24 +86,16 @@ class Sale extends Model
 
     public function calculateTotals()
     {
-        // محاسبه جمع کل از آیتم‌ها
         $this->total_price = $this->items->sum(function($item) {
             return $item->quantity * $item->unit_price;
         });
 
-        // محاسبه جمع تخفیف‌ها
         $this->discount = $this->items->sum('discount');
 
-        // محاسبه جمع مالیات
-        $this->tax = $this->items->sum(function($item) {
-            $subtotal = $item->quantity * $item->unit_price - $item->discount;
-            return $subtotal * ($item->tax_percent / 100);
-        });
+        $this->tax = $this->items->sum('tax');
 
-        // محاسبه مبلغ نهایی
         $this->final_amount = $this->total_price - $this->discount + $this->tax;
 
-        // محاسبه مبلغ باقیمانده
         $this->remaining_amount = $this->final_amount - $this->paid_amount;
 
         $this->save();
