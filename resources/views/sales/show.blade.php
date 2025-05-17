@@ -4,10 +4,16 @@
 
 @section('styles')
 <link rel="stylesheet" href="{{ asset('css/sales-show.css') }}">
+<style>
+    .status-paid     { color: #16a34a; font-weight: bold; }
+    .status-partial  { color: #f59e42; font-weight: bold; }
+    .status-unpaid   { color: #dc2626; font-weight: bold; }
+</style>
 @endsection
 
 @section('content')
 <div class="sales-show-container animate-fade-in">
+
     <!-- هدر فاکتور -->
     <div class="invoice-header">
         <div class="invoice-header-content">
@@ -32,24 +38,19 @@
                 @endif
             </div>
         </div>
-
         <div class="invoice-actions text-left">
             <a href="{{ route('sales.index') }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-right"></i>
                 <span>بازگشت به لیست</span>
             </a>
-
             <button type="button" class="btn btn-primary btn-print" onclick="InvoiceManager.printInvoice()">
                 <i class="fas fa-print"></i>
                 <span>چاپ فاکتور</span>
             </button>
-
-            @if($sale->status === 'pending')
             <a href="{{ route('sales.edit', $sale) }}" class="btn btn-warning">
                 <i class="fas fa-edit"></i>
                 <span>ویرایش فاکتور</span>
             </a>
-            @endif
         </div>
     </div>
 
@@ -57,82 +58,65 @@
     <div class="invoice-parties">
         <!-- اطلاعات مشتری -->
         <div class="party-card animate-fade-in" style="animation-delay: 0.1s">
-            <h3 class="party-title">
-                <i class="fas fa-user"></i>
-                <span>اطلاعات خریدار</span>
-            </h3>
+            <h3 class="party-title"><i class="fas fa-user"></i> <span>اطلاعات خریدار</span></h3>
             <div class="party-info">
                 @if($sale->customer)
-                    <div class="info-row">
-                        <span class="info-label">نام و نام خانوادگی:</span>
-                        <span class="info-value">{{ $sale->customer->full_name }}</span>
-                    </div>
+                    <div class="info-row"><span class="info-label">نام و نام خانوادگی:</span><span class="info-value">{{ $sale->customer->full_name }}</span></div>
                     @if($sale->customer->mobile)
-                    <div class="info-row">
-                        <span class="info-label">شماره تماس:</span>
-                        <span class="info-value farsi-number">{{ $sale->customer->mobile }}</span>
-                    </div>
+                    <div class="info-row"><span class="info-label">شماره تماس:</span><span class="info-value farsi-number">{{ $sale->customer->mobile }}</span></div>
                     @endif
                     @if($sale->customer->email)
-                    <div class="info-row">
-                        <span class="info-label">ایمیل:</span>
-                        <span class="info-value">{{ $sale->customer->email }}</span>
-                    </div>
+                    <div class="info-row"><span class="info-label">ایمیل:</span><span class="info-value">{{ $sale->customer->email }}</span></div>
                     @endif
                     @if($sale->customer->address)
-                    <div class="info-row">
-                        <span class="info-label">آدرس:</span>
-                        <span class="info-value">{{ $sale->customer->address }}</span>
-                    </div>
+                    <div class="info-row"><span class="info-label">آدرس:</span><span class="info-value">{{ $sale->customer->address }}</span></div>
                     @endif
                 @else
                     <div class="text-muted">اطلاعات مشتری موجود نیست</div>
                 @endif
             </div>
         </div>
-
         <!-- اطلاعات فروشنده -->
         <div class="party-card animate-fade-in" style="animation-delay: 0.2s">
-            <h3 class="party-title">
-                <i class="fas fa-store"></i>
-                <span>اطلاعات فروشنده</span>
-            </h3>
+            <h3 class="party-title"><i class="fas fa-store"></i> <span>اطلاعات فروشنده</span></h3>
             <div class="party-info">
                 @if($sale->seller)
-                    <div class="info-row">
-                        <span class="info-label">نام فروشنده:</span>
-                        <span class="info-value">{{ $sale->seller->full_name }}</span>
-                    </div>
-                    @if($sale->seller->code)
-                    <div class="info-row">
-                        <span class="info-label">کد فروشنده:</span>
-                        <span class="info-value farsi-number">{{ $sale->seller->code }}</span>
-                    </div>
+                    <div class="info-row"><span class="info-label">نام فروشنده:</span><span class="info-value">{{ $sale->seller->full_name }}</span></div>
+                    @if($sale->seller->seller_code)
+                    <div class="info-row"><span class="info-label">کد فروشنده:</span><span class="info-value farsi-number">{{ $sale->seller->seller_code }}</span></div>
                     @endif
                     @if($sale->seller->email)
-                    <div class="info-row">
-                        <span class="info-label">ایمیل:</span>
-                        <span class="info-value">{{ $sale->seller->email }}</span>
-                    </div>
+                    <div class="info-row"><span class="info-label">ایمیل:</span><span class="info-value">{{ $sale->seller->email }}</span></div>
                     @endif
                 @else
                     <div class="text-muted">اطلاعات فروشنده موجود نیست</div>
                 @endif
             </div>
         </div>
-
         <!-- وضعیت فاکتور -->
         <div class="party-card animate-fade-in" style="animation-delay: 0.3s">
-            <h3 class="party-title">
-                <i class="fas fa-info-circle"></i>
-                <span>وضعیت فاکتور</span>
-            </h3>
+            <h3 class="party-title"><i class="fas fa-info-circle"></i> <span>وضعیت فاکتور</span></h3>
             <div class="party-info">
+                @php
+                    $final_amount = $sale->items->sum(function($item){ return $item->quantity * $item->unit_price - $item->discount + $item->tax; });
+                    $paid_amount = $sale->paid_amount ?? 0;
+                    $remaining_amount = $final_amount - $paid_amount;
+                    if ($remaining_amount < 0) $remaining_amount = 0;
+
+                    if ($paid_amount == 0) {
+                        $status_label = 'پرداخت نشده';
+                        $status_class = 'status-unpaid';
+                    } elseif ($remaining_amount > 0) {
+                        $status_label = 'پرداخت ناقص';
+                        $status_class = 'status-partial';
+                    } else {
+                        $status_label = 'پرداخت شده';
+                        $status_class = 'status-paid';
+                    }
+                @endphp
                 <div class="info-row">
                     <span class="info-label">وضعیت:</span>
-                    <span class="status-badge status-{{ $sale->status }}">
-                        {{ $sale->status_label }}
-                    </span>
+                    <span class="{{ $status_class }} farsi-number">{{ $status_label }}</span>
                 </div>
                 @if($sale->paid_at)
                 <div class="info-row">
@@ -144,12 +128,6 @@
                 <div class="info-row">
                     <span class="info-label">روش پرداخت:</span>
                     <span class="info-value">{{ $sale->payment_method }}</span>
-                </div>
-                @endif
-                @if($sale->payment_reference)
-                <div class="info-row">
-                    <span class="info-label">شماره پیگیری:</span>
-                    <span class="info-value farsi-number">{{ $sale->payment_reference }}</span>
                 </div>
                 @endif
             </div>
@@ -174,7 +152,21 @@
                     </tr>
                 </thead>
                 <tbody>
+                    @php
+                        $sum_total = 0;
+                        $sum_discount = 0;
+                        $sum_tax = 0;
+                    @endphp
                     @forelse($sale->items as $index => $item)
+                    @php
+                        $row_total = $item->quantity * $item->unit_price;
+                        $row_discount = $item->discount ?? 0;
+                        $row_tax = $item->tax ?? 0;
+                        $row_total_price = $row_total - $row_discount + $row_tax;
+                        $sum_total += $row_total;
+                        $sum_discount += $row_discount;
+                        $sum_tax += $row_tax;
+                    @endphp
                     <tr>
                         <td class="text-center farsi-number">{{ $index + 1 }}</td>
                         <td>
@@ -185,25 +177,25 @@
                                 @endif
                             </div>
                         </td>
-                        <td class="text-center farsi-number">{{ $item->quantity }}</td>
+                        <td class="text-center farsi-number">{{ number_format($item->quantity, 2) }}</td>
                         <td class="text-center">{{ $item->unit ?: 'عدد' }}</td>
-                        <td class="text-center farsi-number" data-type="money">{{ $item->unit_price }}</td>
+                        <td class="text-center farsi-number" data-type="money">{{ number_format($item->unit_price, 2) }}</td>
                         <td class="text-center">
-                            @if($item->discount > 0)
-                                <span class="text-danger farsi-number" data-type="money">{{ $item->discount }}</span>
+                            @if($row_discount > 0)
+                                <span class="text-danger farsi-number" data-type="money">{{ number_format($row_discount, 2) }}</span>
                             @else
                                 <span class="text-muted">-</span>
                             @endif
                         </td>
                         <td class="text-center">
-                            @if($item->tax > 0)
-                                <span class="text-info farsi-number">{{ $item->tax }}٪</span>
+                            @if($row_tax > 0)
+                                <span class="text-info farsi-number" data-type="money">{{ number_format($row_tax, 2) }}</span>
                             @else
                                 <span class="text-muted">-</span>
                             @endif
                         </td>
                         <td class="text-center farsi-number" data-type="money">
-                            {{ $item->quantity * $item->unit_price - ($item->discount ?? 0) }}
+                            {{ number_format($row_total_price, 2) }}
                         </td>
                     </tr>
                     @empty
@@ -223,50 +215,48 @@
 
     <!-- خلاصه فاکتور -->
     <div class="invoice-summary animate-fade-in" style="animation-delay: 0.5s">
+        @php
+            $final_amount = $sum_total - $sum_discount + $sum_tax;
+            $paid_amount = $sale->paid_amount ?? 0;
+            $remaining_amount = $final_amount - $paid_amount;
+            if ($remaining_amount < 0) $remaining_amount = 0;
+        @endphp
         <div class="summary-card">
             <h3 class="summary-title">خلاصه مالی</h3>
             <div class="summary-list">
                 <div class="summary-item">
                     <span class="summary-label">جمع کل:</span>
-                    <span class="summary-value farsi-number" data-type="money">{{ $sale->total_price }}</span>
+                    <span class="summary-value farsi-number">{{ number_format($sum_total, 2) }}</span>
                 </div>
-                @if($sale->discount > 0)
                 <div class="summary-item">
                     <span class="summary-label">تخفیف:</span>
-                    <span class="summary-value text-danger farsi-number" data-type="money">{{ $sale->discount }}</span>
+                    <span class="summary-value text-danger farsi-number">{{ number_format($sum_discount, 2) }}</span>
                 </div>
-                @endif
-                @if($sale->tax > 0)
                 <div class="summary-item">
                     <span class="summary-label">مالیات:</span>
-                    <span class="summary-value text-info farsi-number" data-type="money">{{ $sale->tax }}</span>
+                    <span class="summary-value text-info farsi-number">{{ number_format($sum_tax, 2) }}</span>
                 </div>
-                @endif
                 <div class="summary-item">
                     <span class="summary-label">مبلغ پرداخت شده:</span>
-                    <span class="summary-value text-success farsi-number" data-type="money">{{ $sale->paid_amount }}</span>
+                    <span class="summary-value text-success farsi-number">{{ number_format($paid_amount, 2) }}</span>
                 </div>
                 <div class="summary-item">
                     <span class="summary-label">مبلغ باقیمانده:</span>
-                    <span class="summary-value text-danger farsi-number" data-type="money">{{ $sale->remaining_amount }}</span>
+                    <span class="summary-value text-danger farsi-number">{{ number_format($remaining_amount, 2) }}</span>
                 </div>
                 <div class="summary-total">
                     <span>مبلغ نهایی:</span>
-                    <span class="farsi-number" data-type="money">{{ $sale->final_amount }}</span>
+                    <span class="farsi-number">{{ number_format($final_amount, 2) }}</span>
                 </div>
             </div>
         </div>
 
-
-        <!-- فرم تغییر وضعیت -->
-        @if($sale->status !== 'paid')
-        <!-- فرم پرداخت (قابلیت ویرایش): -->
+        <!-- فرم پرداخت و ویرایش -->
         <div class="summary-card">
-            <h3 class="summary-title">ثبت/ویرایش پرداخت</h3>
+            <h3 class="summary-title">ثبت یا ویرایش پرداخت</h3>
             <form id="statusUpdateForm" action="{{ route('sales.update-status', $sale) }}" method="POST" novalidate>
                 @csrf
                 @method('PATCH')
-
                 <div class="form-group mb-3">
                     <label class="form-label">روش پرداخت</label>
                     <select name="payment_method" class="form-select" required id="paymentMethodSelect">
@@ -280,217 +270,88 @@
                     </select>
                 </div>
 
-                <!-- مبلغ کل و باقیمانده -->
-                <div class="invoice-payment-status mb-4">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="payment-info-box">
-                                <div class="title">مبلغ کل</div>
-                                <div class="amount">{{ number_format($sale->total_amount) }} تومان</div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="payment-info-box">
-                                <div class="title">پرداخت شده</div>
-                                <div class="amount text-success">{{ number_format($sale->paid_amount) }} تومان</div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="payment-info-box">
-                                <div class="title">مانده حساب</div>
-                                <div class="amount text-danger">{{ number_format($sale->remaining_amount) }} تومان</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-        <!-- انتخاب روش پرداخت -->
-        <div class="form-group mb-3">
-            <label class="form-label">روش پرداخت</label>
-            <select name="payment_method" class="form-select" required id="paymentMethodSelect">
-                <option value="">انتخاب کنید</option>
-                <option value="cash">پرداخت نقدی</option>
-                <option value="card">کارت به کارت</option>
-                <option value="pos">دستگاه کارتخوان</option>
-                <option value="online">پرداخت آنلاین</option>
-                <option value="cheque">چک</option>
-                <option value="multi">چند روش پرداخت</option>
-            </select>
-        </div>
-
-        <!-- فرم پرداخت نقدی -->
-        <div id="cashPaymentForm" class="payment-form d-none">
-            <div class="form-group mb-3">
-                <label class="form-label">مبلغ نقدی (تومان)</label>
-                <input type="number" name="cash_amount" class="form-control" placeholder="مبلغ را وارد کنید">
-            </div>
-            <div class="form-group mb-3">
-                <label class="form-label">شماره رسید</label>
-                <input type="text" name="cash_reference" class="form-control" placeholder="شماره رسید را وارد کنید">
-            </div>
-        </div>
-
-        <!-- فرم کارت به کارت -->
-        <div id="cardPaymentForm" class="payment-form d-none">
-            <div class="form-group mb-3">
-                <label class="form-label">مبلغ کارت به کارت (تومان)</label>
-                <input type="number" name="card_amount" class="form-control" placeholder="مبلغ را وارد کنید">
-            </div>
-            <div class="form-group mb-3">
-                <label class="form-label">شماره کارت مقصد</label>
-                <input type="text" name="card_number" class="form-control" placeholder="شماره کارت را وارد کنید">
-            </div>
-            <div class="form-group mb-3">
-                <label class="form-label">نام بانک</label>
-                <input type="text" name="card_bank" class="form-control" placeholder="نام بانک را وارد کنید">
-            </div>
-            <div class="form-group mb-3">
-                <label class="form-label">شماره پیگیری</label>
-                <input type="text" name="card_reference" class="form-control" placeholder="شماره پیگیری را وارد کنید">
-            </div>
-        </div>
-
-        <!-- فرم دستگاه کارتخوان -->
-        <div id="posPaymentForm" class="payment-form d-none">
-            <div class="form-group mb-3">
-                <label class="form-label">مبلغ کارتخوان (تومان)</label>
-                <input type="number" name="pos_amount" class="form-control" placeholder="مبلغ را وارد کنید">
-            </div>
-            <div class="form-group mb-3">
-                <label class="form-label">شماره پایانه</label>
-                <input type="text" name="pos_terminal" class="form-control" placeholder="شماره پایانه را وارد کنید">
-            </div>
-            <div class="form-group mb-3">
-                <label class="form-label">شماره پیگیری</label>
-                <input type="text" name="pos_reference" class="form-control" placeholder="شماره پیگیری را وارد کنید">
-            </div>
-        </div>
-
-        <!-- فرم پرداخت آنلاین -->
-        <div id="onlinePaymentForm" class="payment-form d-none">
-            <div class="form-group mb-3">
-                <label class="form-label">مبلغ پرداخت آنلاین (تومان)</label>
-                <input type="number" name="online_amount" class="form-control" placeholder="مبلغ را وارد کنید">
-            </div>
-            <div class="form-group mb-3">
-                <label class="form-label">شماره تراکنش</label>
-                <input type="text" name="online_transaction_id" class="form-control" placeholder="شماره تراکنش را وارد کنید">
-            </div>
-        </div>
-
-        <!-- فرم چک -->
-        <div id="chequePaymentForm" class="payment-form d-none">
-            <div class="form-group mb-3">
-                <label class="form-label">مبلغ چک (تومان)</label>
-                <input type="number" name="cheque_amount" class="form-control" placeholder="مبلغ را وارد کنید">
-            </div>
-            <div class="form-group mb-3">
-                <label class="form-label">شماره چک</label>
-                <input type="text" name="cheque_number" class="form-control" placeholder="شماره چک را وارد کنید">
-            </div>
-            <div class="form-group mb-3">
-                <label class="form-label">نام بانک</label>
-                <input type="text" name="cheque_bank" class="form-control" placeholder="نام بانک را وارد کنید">
-            </div>
-            <div class="form-group mb-3">
-                <label class="form-label">تاریخ سررسید</label>
-                <input type="date" name="cheque_due_date" class="form-control">
-            </div>
-        </div>
-
-        <!-- فرم چند روش پرداخت -->
-        <div id="multiPaymentForm" class="payment-form d-none">
-            <div class="alert alert-info">
-                لطفاً مبالغ پرداختی برای هر روش را مشخص کنید.
-            </div>
-
-            <!-- نقدی -->
-            <div class="multi-payment-section">
-                <div class="form-check mb-2">
-                    <input type="checkbox" class="form-check-input" id="multiCashCheck">
-                    <label class="form-check-label" for="multiCashCheck">پرداخت نقدی</label>
-                </div>
-                <div id="multiCashFields" class="d-none">
+                <!-- فرم نقدی -->
+                <div id="cashPaymentForm" class="payment-form {{ old('payment_method', $sale->payment_method)=='cash'?'':'d-none' }}">
                     <div class="form-group mb-3">
                         <label class="form-label">مبلغ نقدی (تومان)</label>
-                        <input type="number" name="multi_cash_amount" class="form-control multi-amount" placeholder="مبلغ را وارد کنید">
+                        <input type="number" step="0.01" name="cash_amount" class="form-control" value="{{ old('cash_amount', $sale->cash_amount) }}">
                     </div>
                     <div class="form-group mb-3">
                         <label class="form-label">شماره رسید</label>
-                        <input type="text" name="multi_cash_reference" class="form-control" placeholder="شماره رسید را وارد کنید">
+                        <input type="text" name="cash_reference" class="form-control" value="{{ old('cash_reference', $sale->cash_reference) }}">
                     </div>
                 </div>
-            </div>
-
-            <!-- کارت به کارت -->
-            <div class="multi-payment-section mt-3">
-                <div class="form-check mb-2">
-                    <input type="checkbox" class="form-check-input" id="multiCardCheck">
-                    <label class="form-check-label" for="multiCardCheck">کارت به کارت</label>
-                </div>
-                <div id="multiCardFields" class="d-none">
+                <!-- فرم کارت به کارت -->
+                <div id="cardPaymentForm" class="payment-form {{ old('payment_method', $sale->payment_method)=='card'?'':'d-none' }}">
                     <div class="form-group mb-3">
                         <label class="form-label">مبلغ کارت به کارت (تومان)</label>
-                        <input type="number" name="multi_card_amount" class="form-control multi-amount" placeholder="مبلغ را وارد کنید">
+                        <input type="number" step="0.01" name="card_amount" class="form-control" value="{{ old('card_amount', $sale->card_amount) }}">
                     </div>
                     <div class="form-group mb-3">
-                        <label class="form-label">شماره کارت</label>
-                        <input type="text" name="multi_card_number" class="form-control" placeholder="شماره کارت را وارد کنید">
+                        <label class="form-label">شماره کارت مقصد</label>
+                        <input type="text" name="card_number" class="form-control" value="{{ old('card_number', $sale->card_number) }}">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">نام بانک</label>
+                        <input type="text" name="card_bank" class="form-control" value="{{ old('card_bank', $sale->card_bank) }}">
                     </div>
                     <div class="form-group mb-3">
                         <label class="form-label">شماره پیگیری</label>
-                        <input type="text" name="multi_card_reference" class="form-control" placeholder="شماره پیگیری را وارد کنید">
+                        <input type="text" name="card_reference" class="form-control" value="{{ old('card_reference', $sale->card_reference) }}">
                     </div>
                 </div>
-            </div>
-
-            <!-- چک -->
-            <div class="multi-payment-section mt-3">
-                <div class="form-check mb-2">
-                    <input type="checkbox" class="form-check-input" id="multiChequeCheck">
-                    <label class="form-check-label" for="multiChequeCheck">چک</label>
+                <!-- فرم دستگاه کارتخوان -->
+                <div id="posPaymentForm" class="payment-form {{ old('payment_method', $sale->payment_method)=='pos'?'':'d-none' }}">
+                    <div class="form-group mb-3">
+                        <label class="form-label">مبلغ کارتخوان (تومان)</label>
+                        <input type="number" step="0.01" name="pos_amount" class="form-control" value="{{ old('pos_amount', $sale->pos_amount) }}">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">شماره پایانه</label>
+                        <input type="text" name="pos_terminal" class="form-control" value="{{ old('pos_terminal', $sale->pos_terminal) }}">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">شماره پیگیری</label>
+                        <input type="text" name="pos_reference" class="form-control" value="{{ old('pos_reference', $sale->pos_reference) }}">
+                    </div>
                 </div>
-                <div id="multiChequeFields" class="d-none">
+                <!-- فرم پرداخت آنلاین -->
+                <div id="onlinePaymentForm" class="payment-form {{ old('payment_method', $sale->payment_method)=='online'?'':'d-none' }}">
+                    <div class="form-group mb-3">
+                        <label class="form-label">مبلغ پرداخت آنلاین (تومان)</label>
+                        <input type="number" step="0.01" name="online_amount" class="form-control" value="{{ old('online_amount', $sale->online_amount) }}">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">شماره تراکنش</label>
+                        <input type="text" name="online_transaction_id" class="form-control" value="{{ old('online_transaction_id', $sale->online_transaction_id) }}">
+                    </div>
+                </div>
+                <!-- فرم چک -->
+                <div id="chequePaymentForm" class="payment-form {{ old('payment_method', $sale->payment_method)=='cheque'?'':'d-none' }}">
                     <div class="form-group mb-3">
                         <label class="form-label">مبلغ چک (تومان)</label>
-                        <input type="number" name="multi_cheque_amount" class="form-control multi-amount" placeholder="مبلغ را وارد کنید">
+                        <input type="number" step="0.01" name="cheque_amount" class="form-control" value="{{ old('cheque_amount', $sale->cheque_amount) }}">
                     </div>
                     <div class="form-group mb-3">
                         <label class="form-label">شماره چک</label>
-                        <input type="text" name="multi_cheque_number" class="form-control" placeholder="شماره چک را وارد کنید">
+                        <input type="text" name="cheque_number" class="form-control" value="{{ old('cheque_number', $sale->cheque_number) }}">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">نام بانک</label>
+                        <input type="text" name="cheque_bank" class="form-control" value="{{ old('cheque_bank', $sale->cheque_bank) }}">
                     </div>
                     <div class="form-group mb-3">
                         <label class="form-label">تاریخ سررسید</label>
-                        <input type="date" name="multi_cheque_due_date" class="form-control">
+                        <input type="date" name="cheque_due_date" class="form-control" value="{{ old('cheque_due_date', $sale->cheque_due_date) }}">
                     </div>
                 </div>
-            </div>
 
-            <div class="payment-summary mt-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <span>جمع مبالغ وارد شده:</span>
-                    <span id="multiPaymentTotal" class="text-primary">۰ تومان</span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mt-2">
-                    <span>مانده حساب:</span>
-                    <span id="multiPaymentRemaining" class="text-danger">{{ number_format($sale->remaining_amount) }} تومان</span>
-                </div>
-            </div>
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-save"></i>
+                    <span>ثبت یا ویرایش پرداخت</span>
+                </button>
+            </form>
         </div>
-
-        <!-- یادداشت پرداخت -->
-        <div class="form-group mb-3 mt-4">
-            <label class="form-label">یادداشت پرداخت</label>
-            <textarea name="payment_notes" class="form-control" rows="3" placeholder="توضیحات اضافی در مورد پرداخت را اینجا وارد کنید..."></textarea>
-        </div>
-
-        <button type="submit" class="btn btn-primary w-100">
-            <i class="fas fa-save"></i>
-            <span>ثبت اطلاعات پرداخت</span>
-        </button>
-    </form>
-</div>
-@endif
     </div>
 
     <!-- یادداشت‌ها -->
@@ -509,5 +370,33 @@
 @endsection
 
 @section('scripts')
-<script src="{{ asset('js/sales-show.js') }}"></script>
+<script>
+    // نمایش فرم هر روش پرداخت بر اساس انتخاب
+    function togglePaymentForms() {
+        let val = document.getElementById('paymentMethodSelect').value;
+        let methods = ['cash', 'card', 'pos', 'online', 'cheque', 'multi'];
+        methods.forEach(function(method){
+            let el = document.getElementById(method+'PaymentForm');
+            if(el) el.classList.add('d-none');
+        });
+        if(document.getElementById(val+'PaymentForm')) {
+            document.getElementById(val+'PaymentForm').classList.remove('d-none');
+        }
+    }
+    document.getElementById('paymentMethodSelect').addEventListener('change', togglePaymentForms);
+    window.addEventListener('DOMContentLoaded', togglePaymentForms);
+
+    // تابع تبدیل عدد انگلیسی به فارسی
+    function toFaNumber(str) {
+        return (str+'').replace(/[0-9]/g, function(w){return '۰۱۲۳۴۵۶۷۸۹'[+w]});
+    }
+    // همه اعداد را به فارسی کن
+    function convertAllNumbersToFa() {
+        document.querySelectorAll('.farsi-number').forEach(function(el){
+            el.innerText = toFaNumber(el.innerText);
+        });
+    }
+    window.addEventListener('DOMContentLoaded', convertAllNumbersToFa);
+    // اگر ajax داشتی یا بعد از فرم نیاز شد، دوباره convertAllNumbersToFa() اجرا شود
+</script>
 @endsection
