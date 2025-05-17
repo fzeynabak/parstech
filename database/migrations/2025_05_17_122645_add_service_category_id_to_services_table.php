@@ -10,12 +10,14 @@ return new class extends Migration
     {
         Schema::table('services', function (Blueprint $table) {
             $table->unsignedBigInteger('service_category_id')->nullable()->after('code');
+            $table->foreign('service_category_id')->references('id')->on('service_categories')->onDelete('set null');
         });
     }
 
     public function down()
     {
         Schema::table('services', function (Blueprint $table) {
+            $table->dropForeign(['service_category_id']);
             $table->dropColumn('service_category_id');
         });
     }
