@@ -1,3 +1,7 @@
+
+
+
+
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <a href="{{ url('/') }}" class="brand-link">
         <img src="{{ asset('img/logo.png') }}" alt="Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
@@ -5,43 +9,12 @@
     </a>
 
     <div class="sidebar">
-        <!-- User Profile Panel with Dropdown -->
-        <div class="user-panel mt-3 pb-3 mb-3 d-flex align-items-center">
+        <div class="user-panel mt-3 pb-3 mb-3 d-flex">
             <div class="image">
-                <img src="{{ Auth::user()->profile_photo_url ?? asset('img/user.png') }}" class="img-circle elevation-2" alt="User Image" width="40" height="40">
+                <img src="{{ asset('img/user.png') }}" class="img-circle elevation-2" alt="User Image">
             </div>
-            <div class="info dropdown">
-                <a href="#" class="d-block dropdown-toggle" id="sidebarProfileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    {{ Auth::user()->name ?? 'کاربر' }}
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="sidebarProfileDropdown">
-                    <li>
-                        <a class="dropdown-item" href="{{ route('profile.edit') }}">
-                            <i class="fas fa-user-edit me-2"></i> ویرایش پروفایل
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="{{ route('profile.edit') }}#update-password-form">
-                            <i class="fas fa-key me-2"></i> تغییر رمز عبور
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="{{ route('profile.edit') }}">
-                            <i class="fas fa-image me-2"></i> تغییر تصویر کاربر
-                        </a>
-                    </li>
-                    <li>
-                        <hr class="dropdown-divider">
-                    </li>
-                    <li>
-                        <form method="POST" action="{{ route('logout') }}" id="sidebar-logout-form">
-                            @csrf
-                            <a href="#" class="dropdown-item text-danger" onclick="event.preventDefault();document.getElementById('sidebar-logout-form').submit();">
-                                <i class="fas fa-sign-out-alt me-2"></i> خروج
-                            </a>
-                        </form>
-                    </li>
-                </ul>
+            <div class="info">
+                <a href="#" class="d-block">{{ Auth::user()->name ?? 'کاربر' }}</a>
             </div>
         </div>
 
@@ -55,7 +28,6 @@
                     </a>
                 </li>
 
-                {{-- کالا و خدمات --}}
                 <li class="nav-item has-treeview {{ request()->is('products*') || request()->is('stocks*') || request()->is('categories*') ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ request()->is('products*') || request()->is('stocks*') || request()->is('categories*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-warehouse"></i>
@@ -65,54 +37,63 @@
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
+                        {{-- افزودن محصول --}}
                         <li class="nav-item">
                             <a href="{{ route('products.create') }}" class="nav-link {{ request()->routeIs('products.create') ? 'active' : '' }}">
                                 <i class="fas fa-plus nav-icon text-success"></i>
                                 <p>افزودن محصول</p>
                             </a>
                         </li>
+                        {{-- لیست محصولات --}}
                         <li class="nav-item">
                             <a href="{{ route('products.index') }}" class="nav-link {{ request()->routeIs('products.index') ? 'active' : '' }}">
                                 <i class="fas fa-box nav-icon"></i>
                                 <p>لیست محصولات</p>
                             </a>
                         </li>
+                        {{-- افزودن خدمت --}}
                         <li class="nav-item">
                             <a href="{{ route('services.create') }}" class="nav-link {{ request()->routeIs('services.create') ? 'active' : '' }}">
                                 <i class="fas fa-plus nav-icon text-info"></i>
                                 <p>افزودن خدمات</p>
                             </a>
                         </li>
+                        {{-- لیست محصولات --}}
                         <li class="nav-item">
                             <a href="{{ route('services.index') }}" class="nav-link {{ request()->routeIs('services.index') ? 'active' : '' }}">
                                 <i class="fas fa-box nav-icon"></i>
                                 <p>لیست خدمات</p>
                             </a>
                         </li>
+                        {{-- ورود کالا --}}
                         <li class="nav-item">
                             <a href="{{ route('stocks.in') }}" class="nav-link {{ request()->routeIs('stocks.in') ? 'active' : '' }}">
                                 <i class="fas fa-arrow-down nav-icon"></i>
                                 <p>ورود کالا</p>
                             </a>
                         </li>
+                        {{-- خروج کالا --}}
                         <li class="nav-item">
                             <a href="{{ route('stocks.out') }}" class="nav-link {{ request()->routeIs('stocks.out') ? 'active' : '' }}">
                                 <i class="fas fa-arrow-up nav-icon"></i>
                                 <p>خروج کالا</p>
                             </a>
                         </li>
+                        {{-- انتقال بین انبارها --}}
                         <li class="nav-item">
                             <a href="{{ route('stocks.transfer') }}" class="nav-link {{ request()->routeIs('stocks.transfer') ? 'active' : '' }}">
                                 <i class="fas fa-exchange-alt nav-icon"></i>
                                 <p>انتقال بین انبارها</p>
                             </a>
                         </li>
+                        {{-- دسته‌بندی --}}
                         <li class="nav-item">
                             <a href="{{ route('categories.create') }}" class="nav-link {{ request()->routeIs('categories.create') ? 'active' : '' }}">
                                 <i class="fas fa-tags nav-icon"></i>
                                 <p>دسته‌بندی</p>
                             </a>
                         </li>
+                        {{-- لیست دسته‌بندی --}}
                         <li class="nav-item">
                             <a href="{{ route('categories.index') }}" class="nav-link {{ request()->routeIs('categories.index') ? 'active' : '' }}">
                                 <i class="fas fa-list-ul nav-icon"></i>
@@ -138,30 +119,36 @@
                                 <p>شخص جدید</p>
                             </a>
                         </li>
+                        {{-- لیست اشخاص --}}
                         <li class="nav-item">
                             <a href="{{ route('persons.index') }}" class="nav-link {{ request()->routeIs('persons.index') ? 'active' : '' }}">
                                 <i class="fas fa-list nav-icon"></i>
                                 <p>لیست اشخاص</p>
                             </a>
                         </li>
+                            {{-- منوی سهامداران --}}
                         <li class="nav-item">
                             <a href="{{ route('shareholders.index') }}" class="nav-link {{ request()->routeIs('shareholders.*') ? 'active' : '' }}">
                                 <i class="fas fa-user-shield nav-icon"></i>
                                 <p>سهامداران</p>
                             </a>
                         </li>
+                        {{-- منوی مشتریان --}}
                         <li class="nav-item">
                             <a href="{{ route('sellers.create') }}" class="nav-link {{ request()->routeIs('sellers.create') ? 'active' : '' }}">
                                 <i class="fas fa-store nav-icon"></i>
                                 <p>فروشنده جدید</p>
                             </a>
                         </li>
+                        {{-- لیست فروشنده --}}
                         <li class="nav-item">
                             <a href="{{ route('sellers.index') }}" class="nav-link {{ request()->routeIs('sellers.index') ? 'active' : '' }}">
                                 <i class="fas fa-user-tie nav-icon"></i>
                                 <p>لیست فروشندگان</p>
                             </a>
                         </li>
+                        {{-- صفحه فروشنده --}}
+
                         <li class="nav-item">
                             <a href="{{ route('persons.suppliers') }}" class="nav-link {{ request()->routeIs('persons.suppliers') ? 'active' : '' }}">
                                 <i class="fas fa-truck nav-icon"></i>
@@ -187,6 +174,7 @@
                                 <p>فروش جدید</p>
                             </a>
                         </li>
+
                         <li class="nav-item">
                             <a href="{{ route('sales.index') }}" class="nav-link {{ request()->routeIs('sales.index') ? 'active' : '' }}">
                                 <i class="fas fa-list nav-icon"></i>
@@ -270,6 +258,13 @@
                     </ul>
                 </li>
 
+
+
+                                                {{-- مدیریت انبار --}}
+
+
+
+
                 {{-- گزارشات --}}
                 <li class="nav-item has-treeview {{ request()->is('reports*') ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ request()->is('reports*') ? 'active' : '' }}">
@@ -301,19 +296,42 @@
                     </ul>
                 </li>
 
-                {{-- تنظیمات کلی --}}
-                <li class="nav-item">
-                    <a href="{{ route('settings.company') }}" class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}">
+                {{-- تنظیمات --}}
+                <li class="nav-item has-treeview {{ request()->is('settings*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->is('settings*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-cog"></i>
-                        <p>تنظیمات کلی</p>
+                        <p>
+                            تنظیمات
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
                     </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('settings.company') }}" class="nav-link {{ request()->routeIs('settings.company') ? 'active' : '' }}">
+                                <i class="fas fa-building nav-icon"></i>
+                                <p>اطلاعات شرکت</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('settings.users') }}" class="nav-link {{ request()->routeIs('settings.users') ? 'active' : '' }}">
+                                <i class="fas fa-users-cog nav-icon"></i>
+                                <p>مدیریت کاربران</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" id="openCurrencyModal">
+                                <i class="fas fa-money-bill-wave nav-icon"></i>
+                                <p>مدیریت واحدهای پول</p>
+                            </a>
+                        </li>
+                    </ul>
                 </li>
 
                 {{-- خروج --}}
-                <li class="nav-item d-lg-none">
-                    <form method="POST" action="{{ route('logout') }}" id="sidebar-logout-form-mobile">
+                <li class="nav-item">
+                    <form method="POST" action="{{ route('logout') }}" id="logout-form">
                         @csrf
-                        <a href="#" class="nav-link" onclick="event.preventDefault();document.getElementById('sidebar-logout-form-mobile').submit();">
+                        <a href="#" class="nav-link" onclick="event.preventDefault();document.getElementById('logout-form').submit();">
                             <i class="nav-icon fas fa-sign-out-alt"></i>
                             <p>خروج</p>
                         </a>

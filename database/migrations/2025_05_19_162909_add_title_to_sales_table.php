@@ -6,23 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('sales', function (Blueprint $table) {
-            $table->string('reference')->nullable()->after('invoice_number');
+            $table->string('title')->nullable()->after('currency_id');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('sales', function (Blueprint $table) {
-            $table->dropColumn('reference');
+            $table->dropColumn('title');
         });
     }
 };
