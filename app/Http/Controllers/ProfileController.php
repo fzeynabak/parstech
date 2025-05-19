@@ -57,4 +57,24 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+
+    public function updateAvatar(Request $request)
+    {
+        $user = auth()->user();
+        $request->validate([
+            'avatar' => 'required|image|max:2048',
+        ]);
+
+        // حذف تصویر قبلی اگر وجود داشته باشد
+        if ($user->profile_photo_path) {
+            \Storage::disk('public')->delete($user->profile_photo_path);
+        }
+
+        // ذخیره تصویر جدید
+        $path = $request->file('avatar')->store('avatars', 'public');
+        $user->profile_photo_path = $path;
+        $user->save();
+
+        return back()->with('status', 'avatar-updated');
+    }
 }

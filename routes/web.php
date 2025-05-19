@@ -125,6 +125,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/users', [SettingsController::class, 'users'])->name('users');
     });
 
+    //پروفایل
+    Route::post('/profile/avatar', [App\Http\Controllers\ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
+
     // Products and Categories
     Route::resource('products', ProductController::class);
     Route::post('/products/upload', [ProductController::class, 'upload'])->name('products.upload');
