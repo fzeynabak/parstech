@@ -44,6 +44,13 @@
                                 <p>افزودن محصول</p>
                             </a>
                         </li>
+                        {{-- لیست محصولات --}}
+                        <li class="nav-item">
+                            <a href="{{ route('products.index') }}" class="nav-link {{ request()->routeIs('products.index') ? 'active' : '' }}">
+                                <i class="fas fa-box nav-icon"></i>
+                                <p>لیست محصولات</p>
+                            </a>
+                        </li>
                         {{-- افزودن خدمت --}}
                         <li class="nav-item">
                             <a href="{{ route('services.create') }}" class="nav-link {{ request()->routeIs('services.create') ? 'active' : '' }}">
@@ -53,9 +60,9 @@
                         </li>
                         {{-- لیست محصولات --}}
                         <li class="nav-item">
-                            <a href="{{ route('products.index') }}" class="nav-link {{ request()->routeIs('products.index') ? 'active' : '' }}">
+                            <a href="{{ route('services.index') }}" class="nav-link {{ request()->routeIs('services.index') ? 'active' : '' }}">
                                 <i class="fas fa-box nav-icon"></i>
-                                <p>لیست محصولات</p>
+                                <p>لیست خدمات</p>
                             </a>
                         </li>
                         {{-- ورود کالا --}}

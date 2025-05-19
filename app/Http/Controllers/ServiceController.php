@@ -20,6 +20,38 @@ class ServiceController extends Controller
         return view('services.index', compact('services', 'serviceCategories'));
     }
 
+    public function ajaxList(Request $request)
+    {
+        $query = Service::with('category')->where('is_active', 1);
+
+        if ($request->has('q') && $request->q) {
+            $q = $request->q;
+            $query->where(function ($sub) use ($q) {
+                $sub->where('title', 'like', "%$q%")
+                    ->orWhere('service_code', 'like', "%$q%");
+            });
+        }
+
+        $limit = intval($request->get('limit', 10));
+        $services = $query->limit($limit)->get();
+
+        $results = $services->map(function ($service) {
+            return [
+                'id'         => $service->id,
+                'code'       => $service->service_code,
+                'name'       => $service->title,
+                'category'   => $service->category ? $service->category->name : '-',
+                'unit'       => $service->unit,
+                'sell_price' => $service->price,
+                'description'=> $service->short_description ?? $service->description,
+                'stock'      => 1, // خدمات موجودی ندارد، فقط برای سازگاری با کد JS
+            ];
+        });
+
+        return response()->json($results);
+    }
+
+
     public function nextCode()
     {
         $last = Service::where('service_code', 'like', 'ser%')

@@ -13,11 +13,16 @@
         <tr>
             <th>افزودن</th>
             <th>کد</th>
-            <th>تصویر</th>
+            @if($tabType == 'product')
+                <th>تصویر</th>
+            @endif
             <th>نام</th>
-            <th>موجودی</th>
+            @if($tabType == 'product')
+                <th>موجودی</th>
+            @endif
             <th>دسته‌بندی</th>
             <th>قیمت فروش</th>
+            <th>توضیحات</th>
         </tr>
         </thead>
         <tbody id="{{ $tabType }}-table-body">

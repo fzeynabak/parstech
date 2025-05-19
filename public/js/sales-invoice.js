@@ -95,23 +95,15 @@ document.addEventListener("DOMContentLoaded", function () {
         function renderRows(items) {
             let html = '';
             items.forEach(item => {
-                let stock = parseInt(item.stock) || 0;
-                let disabled = stock < 1 ? 'disabled' : '';
-                let hideBtn = stock < 1 ? 'd-none' : '';
-                let rowBg = stock < 1 ? 'style="background:#ffe6e6!important;"' : '';
-                let stockText = stock < 1 ? '<span class="badge bg-danger">اتمام موجودی</span>' : stock;
-                html += `<tr ${rowBg}>
-                    <td>
-                        <button class="btn btn-success btn-sm add-product-btn ${hideBtn}" data-id="${item.id}" data-type="${type}" ${disabled}>
-                            <i class="fa fa-plus"></i>
-                        </button>
-                    </td>
+                let addBtn = `<button class="btn btn-success btn-sm add-product-btn" data-id="${item.id}" data-type="${type}"><i class="fa fa-plus"></i></button>`;
+                html += `<tr>
+                    <td>${addBtn}</td>
                     <td>${item.code ?? '-'}</td>
-                    <td><img src="${item.image ?? ''}" class="rounded" style="width:40px;height:40px;object-fit:cover"></td>
                     <td>${item.name ?? '-'}</td>
-                    <td>${stockText}</td>
                     <td>${item.category ?? '-'}</td>
+                    ${type === 'product' ? `<td>${item.stock ?? '-'}</td>` : ''}
                     <td>${item.sell_price ? parseInt(item.sell_price).toLocaleString() : '-'}</td>
+                    <td>${item.description ?? ''}</td>
                 </tr>`;
             });
             return html;
@@ -132,11 +124,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (tbody) tbody.innerHTML = renderRows(data);
                 });
         }
-
-        // بارگذاری اولیه
         loadList();
 
-        // جستجو
         const searchInput = document.getElementById(type + '-search-input');
         if (searchInput) {
             searchInput.addEventListener('input', function () {
@@ -158,26 +147,13 @@ document.addEventListener("DOMContentLoaded", function () {
             fetch(`/sales/item-info?id=${id}&type=${type}`)
                 .then(response => response.json())
                 .then(item => {
+                    if (type === 'service') item.stock = 1;
                     let stock = parseInt(item.stock) || 0;
                     if (stock < 1) return;
                     let idx = invoiceItems.findIndex(x => x.id == id && x.type == type);
                     if (idx > -1) {
-                        if (invoiceItems[idx].count >= stock) {
-                            invoiceItems[idx].count = stock;
-                            renderInvoiceItemsTable();
-                            showAlert(`این محصول "${item.name}" فقط ${stock} عدد موجودی دارد و بیش از این نمی‌توانید اضافه کنید.`);
-                            return;
-                        }
                         invoiceItems[idx].count += 1;
                         renderInvoiceItemsTable();
-                        Swal.fire({
-                            icon: 'success',
-                            text: `تعداد این محصول در فاکتور افزایش یافت.`,
-                            timer: 1500,
-                            showConfirmButton: false,
-                            position: 'top-end',
-                            toast: true
-                        });
                         return;
                     } else {
                         item.count = 1;
@@ -191,7 +167,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         return;
                     }
                 })
-                .catch(() => showAlert('خطا در دریافت اطلاعات محصول!'));
+                .catch(() => showAlert('خطا در دریافت اطلاعات!'));
         }
     });
 

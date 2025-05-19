@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\Brand;
 use App\Models\Unit;
+use App\Models\Service;
 
 class ProductController extends Controller
 {
@@ -198,16 +199,17 @@ class ProductController extends Controller
                 'unit' => $product->unit ?? '-',
             ]);
         } elseif ($type === 'service') {
-            $service = \App\Models\Service::with('category')->findOrFail($id);
+            $service = Service::with('category')->findOrFail($id);
             return response()->json([
                 'id' => $service->id,
-                'code' => $service->code,
-                'name' => $service->name,
-                'image' => $service->image,
-                'stock' => $service->stock,
-                'sell_price' => $service->sell_price,
-                'category' => $service->category->name ?? '-',
+                'code' => $service->service_code,
+                'name' => $service->title,
+                'image' => null,
+                'stock' => 1, // خدمات همیشه 1 - فقط جهت سازگاری
+                'sell_price' => $service->price,
+                'category' => $service->category ? $service->category->name : '-',
                 'unit' => $service->unit ?? '-',
+                'description' => $service->short_description ?? $service->description,
             ]);
         }
 
