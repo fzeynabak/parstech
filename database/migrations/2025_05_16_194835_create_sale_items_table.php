@@ -6,27 +6,24 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void
+    public function up()
     {
         Schema::create('sale_items', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('sale_id');
-            $table->unsignedBigInteger('product_id')->nullable();
+            $table->foreignId('sale_id')->constrained()->onDelete('cascade');
+            $table->foreignId('product_id')->nullable()->constrained()->nullOnDelete();
             $table->string('description')->nullable();
             $table->string('unit')->nullable();
             $table->integer('quantity');
-            $table->double('unit_price')->default(0);
-            $table->double('discount')->nullable();
-            $table->double('tax')->nullable();
-            $table->double('total')->nullable();
+            $table->decimal('unit_price', 15, 2);
+            $table->decimal('discount', 15, 2)->default(0);
+            $table->decimal('tax', 15, 2)->default(0);
+            $table->decimal('total', 15, 2);
             $table->timestamps();
-
-            $table->foreign('sale_id')->references('id')->on('sales')->cascadeOnDelete();
-            $table->foreign('product_id')->references('id')->on('products')->nullOnDelete();
         });
     }
 
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('sale_items');
     }
